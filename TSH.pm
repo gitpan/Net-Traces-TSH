@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 0.04;
+our $VERSION = 0.05;
 
 =head1 NAME
 
@@ -997,7 +997,7 @@ sub process_trace( $ ; $$ ) {
       # segments only)
       #
       if ( $text_trace_filename ) {
-	printf TCPDUMP "\n%1.9f ", $timestamp;
+	printf TCPDUMP "%1.9f ", $timestamp;
 	print TCPDUMP
 	  get_IP_address $src, ".$src_port > ",
 	  get_IP_address $dst, ".$dst_port: ",
@@ -1017,7 +1017,7 @@ sub process_trace( $ ; $$ ) {
 
 	  $ack ? "ack $ack_num " : '',
 	  "win $win ",
-	  $urg ? 'urg 1': '',
+	  $urg ? "urg 1\n": "\n",
 	}
     }
 
@@ -1428,7 +1428,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.04.
+This is C<Net::Traces::TSH> version 0.05.
 
 =head1 SEE ALSO
 

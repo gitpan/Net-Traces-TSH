@@ -1,22 +1,25 @@
 Revision history for Perl extension Net::Traces::TSH.
 
-0.04  Tue Mar 30 2004
-	- Minor updates in the process_trace()/tcpdump text generation
-        - Code and POD updates
-        - Added t/sample.tcpdump
-	- Added META.yml
-        - Additional tests released
+0.05 Wed Mar 31 2004
+   - Ditribution fixes: META.yml, t/sample.tcpdump
 
-0.03  Sat Mar 20 2004
-        - Code and POD updates 
-	- pt.pl 0.03 released
-        - Added t/sample.tsh trace
-        - Additional tests released 
+0.04 Tue Mar 30 2004
+   - Minor updates in the process_trace()/tcpdump text generation
+   - Code and POD updates
+   - Added t/sample.tcpdump
+   - Added META.yml
+   - Additional tests released
 
-0.02  Wed Mar 10 2004
-	- Application pt.pl 0.01 released
-	- Additional tests released
-        - POD editorial changes
+0.03 Sat Mar 20 2004
+   - Code and POD updates 
+   - pt.pl 0.03 released
+   - Added t/sample.tsh trace
+   - Additional tests released 
 
-0.01  Mon Mar  1 2004
-	- original public release
+0.02 Wed Mar 10 2004
+   - Application pt.pl 0.01 released
+   - Additional tests released
+   - POD editorial changes
+
+0.01 Mon Mar  1 2004
+   - original public release

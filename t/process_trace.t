@@ -4,7 +4,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 17 };
-use Net::Traces::TSH 0.04 qw( process_trace get_trace_summary_href);
+use Net::Traces::TSH 0.05 qw( process_trace get_trace_summary_href);
 ok(1);
 
 process_trace 't/sample.tsh';
@@ -36,5 +36,5 @@ my $unless_has_diff = system('diff', 't/sample.tcpdump', 't/sample.tcpdump');
 skip ( $unless_has_diff,
        ok(system('diff', 't/local.tcpdump', 't/sample.tcpdump'), 0) );
 
-unlink('local.tcpdump');
-ok(1)
+unlink('t/local.tcpdump') and ok(1);
+
