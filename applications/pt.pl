@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 use strict;
 use warnings;
 use Getopt::Std;
@@ -139,6 +139,5 @@ Copyright 2003-2004 by Kostas Pentikousis. All Rights Reserved.
 
 This program is free software with ABSOLUTELY NO WARRANTY. You can
 redistribute it and/or modify it under the same terms as Perl itself.
-
 
 =cut

@@ -1,11 +1,11 @@
 package Net::Traces::TSH;
 
-use 5.006001;
+use 5.6.1;
 use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 =head1 NAME
 
@@ -565,16 +565,30 @@ to to get the most recent version.
 If TEXT_FILENAME is specified, process_trace() generates a text file
 based on the trace records in a format similar to the modified output
 of F<tcpdump>, as presented in I<TCP/IP Illustrated Volume 1> by
-W. R. Stevens. Here is an example of the contents of such a file:
+W. R. Stevens. The format is explained in more detail in I<TCP/IP
+Illustrated Volume 1>, pp. 230-231.
 
- 0.000000000 10.0.0.1.412 > 10.0.0.2.4400 . ack 1260445590 win 16560
- 0.000104547 10.0.0.3.4700 > 10.0.0.4.2783 . 1484823770:1484825230(1460) ack 2722218997 win 17126
- 0.000172377 10.0.0.3.4700 > 10.0.0.4.2783 . 1484825230:1484826690(1460) ack 2722218997 win 17126
+You can use such an output as input to other tools, present real
+traffic scenarios in a classroom, or simply "eyeball" the trace. For
+example, here are the first ten lines of the contents of such a file:
 
-The format is explained in more detail in I<TCP/IP Illustrated Volume
-1>, pp. 230-231.  You can use such an output as input to other tools,
-present real traffic scenarios in the classroom, or simply "eyeball"
-the trace.
+ 0.000000000 10.0.0.1.6699 > 10.0.0.2.55309: . ack 225051666 win 65463
+ 0.000014000 10.0.0.3.80 > 10.0.0.4.14401: S 457330477:457330477(0) ack 810547499 win 34932
+ 0.000014000 10.0.0.1.6699 > 10.0.0.2.55309: . 3069529864:3069531324(1460) ack 225051666 win 65463
+ 0.000024000 10.0.0.5.12119 > 10.0.0.6.80: F 2073668891:2073668891(0) ack 183269290 win 64240
+ 0.000034000 10.0.0.7.4725 > 10.0.0.8.445: S 3152140131:3152140131(0) win 16384
+ 0.000067000 10.0.0.1.6699 > 10.0.0.2.55309: P 3069531324:3069531944(620) ack 225051666 win 65463
+ 0.000072000 10.0.0.11.3381 > 10.0.0.12.445: S 1378088462:1378088462(0) win 16384
+ 0.000083000 10.0.0.13.1653 > 10.0.0.1.6699: P 3272208349:3272208357(8) ack 501563814 win 32767
+ 0.000093000 10.0.0.14.1320 > 10.0.0.15.445: S 3127123478:3127123478(0) win 64170
+ 0.000095000 10.0.0.4.14401 > 10.0.0.3.80: R 810547499:810547499(0) ack 457330478 win 34932
+
+Note that the text output is similar to what F<tcpdump> with options
+C<-n> and C<-S> would have produced. The only missing field is the TCP
+options negotiated during connection setup. Unfortunately, L<TSH
+records|"DESCRIPTION"> include only the first 16 bytes of the TCP
+header, making it impossible to record the options from the segment
+header.
 
 =cut
 
@@ -986,15 +1000,16 @@ sub process_trace( $ ; $$ ) {
 	printf TCPDUMP "\n%1.9f ", $timestamp;
 	print TCPDUMP
 	  get_IP_address $src, ".$src_port > ",
-	  get_IP_address $dst, ".$dst_port ",
+	  get_IP_address $dst, ".$dst_port: ",
 
-	  $cwr ? 'C' : '', # ECN: Congestion Window Reduced bit
-	  $ece ? 'E' : '', # ECN: ECN-capable Transport
-	  $psh ? 'P' : '', # PSH: Push data to receiving process ASAP
-	  $rst ? 'R' : '', # RST: Reset Connection
 	  $syn ? 'S' : '', # SYN: Synchronize sequence numbers
 	  $fin ? 'F' : '', # FIN: Sender is finished sending data
-	  ($cwr + $ece + $psh + $rst + $fin + $syn) ? ' ' : '. ',
+	  $psh ? 'P' : '', # PSH: Push data to receiving process ASAP
+	  $rst ? 'R' : '', # RST: Reset Connection
+	  $cwr ? 'C' : '', # ECN: Congestion Window Reduced bit
+	  $ece ? 'E' : '', # ECN: ECN-capable Transport
+
+	  ($syn + $fin + $psh + $rst + $cwr + $ece) ? ' ' : '. ',
 
 	  ($tcp_payload or $syn or $fin or $rst)
 	    ? join('', "$seq_num:", $seq_num + $tcp_payload, "($tcp_payload) ")
@@ -1002,6 +1017,7 @@ sub process_trace( $ ; $$ ) {
 
 	  $ack ? "ack $ack_num " : '',
 	  "win $win ",
+	  $urg ? 'urg 1': '',
 	}
     }
 
@@ -1381,7 +1397,7 @@ sub print_value(*$) {
 
 =head1 DEPENDENCIES
 
-None.
+L<Carp>
 
 =head1 EXPORTS
 
@@ -1412,7 +1428,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.03.
+This is C<Net::Traces::TSH> version 0.04.
 
 =head1 SEE ALSO
 

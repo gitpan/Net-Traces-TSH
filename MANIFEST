@@ -1,6 +1,7 @@
 Changes
 Makefile.PL
 MANIFEST
+META.yml
 README
 TSH.pm
 t/core.t
@@ -9,5 +10,6 @@ t/get_IP_address.t
 t/process_trace.t
 t/records_in.t
 t/sample.tsh
+t/sample.tcpdump
 applications/pt.pl
 

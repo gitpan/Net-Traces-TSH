@@ -364,15 +364,29 @@ FUNCTIONS
     If TEXT_FILENAME is specified, process_trace() generates a text file
     based on the trace records in a format similar to the modified output of
     tcpdump, as presented in *TCP/IP Illustrated Volume 1* by W. R. Stevens.
-    Here is an example of the contents of such a file:
-
-     0.000000000 10.0.0.1.412 > 10.0.0.2.4400 . ack 1260445590 win 16560
-     0.000104547 10.0.0.3.4700 > 10.0.0.4.2783 . 1484823770:1484825230(1460) ack 2722218997 win 17126
-     0.000172377 10.0.0.3.4700 > 10.0.0.4.2783 . 1484825230:1484826690(1460) ack 2722218997 win 17126
-
     The format is explained in more detail in *TCP/IP Illustrated Volume 1*,
-    pp. 230-231. You can use such an output as input to other tools, present
-    real traffic scenarios in the classroom, or simply "eyeball" the trace.
+    pp. 230-231.
+
+    You can use such an output as input to other tools, present real traffic
+    scenarios in a classroom, or simply "eyeball" the trace. For example,
+    here are the first ten lines of the contents of such a file:
+
+     0.000000000 10.0.0.1.6699 > 10.0.0.2.55309: . ack 225051666 win 65463
+     0.000014000 10.0.0.3.80 > 10.0.0.4.14401: S 457330477:457330477(0) ack 810547499 win 34932
+     0.000014000 10.0.0.1.6699 > 10.0.0.2.55309: . 3069529864:3069531324(1460) ack 225051666 win 65463
+     0.000024000 10.0.0.5.12119 > 10.0.0.6.80: F 2073668891:2073668891(0) ack 183269290 win 64240
+     0.000034000 10.0.0.7.4725 > 10.0.0.8.445: S 3152140131:3152140131(0) win 16384
+     0.000067000 10.0.0.1.6699 > 10.0.0.2.55309: P 3069531324:3069531944(620) ack 225051666 win 65463
+     0.000072000 10.0.0.11.3381 > 10.0.0.12.445: S 1378088462:1378088462(0) win 16384
+     0.000083000 10.0.0.13.1653 > 10.0.0.1.6699: P 3272208349:3272208357(8) ack 501563814 win 32767
+     0.000093000 10.0.0.14.1320 > 10.0.0.15.445: S 3127123478:3127123478(0) win 64170
+     0.000095000 10.0.0.4.14401 > 10.0.0.3.80: R 810547499:810547499(0) ack 457330478 win 34932
+
+    Note that the text output is similar to what tcpdump with options "-n"
+    and "-S" would have produced. The only missing field is the TCP options
+    negotiated during connection setup. Unfortunately, TSH records include
+    only the first 16 bytes of the TCP header, making it impossible to
+    record the options from the segment header.
 
   records_in
      records_in FILENAME
@@ -407,7 +421,7 @@ FUNCTIONS
     write_trace_summary() *after* calling process_trace().
 
 DEPENDENCIES
-    None.
+    Carp
 
 EXPORTS
     None by default.
@@ -429,7 +443,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.03.
+    This is "Net::Traces::TSH" version 0.04.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at
