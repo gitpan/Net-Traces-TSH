@@ -9,10 +9,13 @@ t/date_of.t
 t/get_IP_address.t
 t/process_trace.t
 t/records_in.t
+t/write_interface_summaries.t
 t/write_trace_summary.t
-t/sample.tsh
-t/sample.csv
-t/sample.tcpdump
+t/sample_input/sample.tsh
+t/sample_output/sample.csv
+t/sample_output/sample.if-1.csv
+t/sample_output/sample.if-2.csv
+t/sample_output/sample.tcpdump
 documentation/sample-summary.pod
 applications/pt.pl
 

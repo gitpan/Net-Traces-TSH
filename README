@@ -107,18 +107,33 @@ DESCRIPTION
     comma separated values (CSV), a platform independent text format.
 
   Data Structures
-    The data collected from a trace is stored is a hash called %Trace, the
-    main data structure in "Net::Traces::TSH". %Trace is initialized and
-    populated by process_trace. The recommended way to get the trace summary
-    information is by calling write_trace_summary, which stores the contents
-    of %Trace in a CSV-formated text file, as shown in SYNOPSIS.
+    A single TSH trace can contain records from several different
+    interfaces. For example, daily TSH traces from the NLANR PMA repository
+    usually contain records from two interfaces (incoming and outgoing).
+    "Net::Traces::TSH" uses two main data structures to record trace
+    information: The hashes %Interfaces and %Trace.
 
-    %Trace is not exported by default and was not designed to be accessed
-    directly by user code. However, if you know what you are doing, you can
-    get a reference to %Trace by calling get_trace_summary_href. If you
-    choose to do so, the following subsections explain how you can access
-    some of the information stored in %Trace. See also Taking advantage of
-    %Trace.
+    %Interfaces contains counts of several protocol particulars on a
+    per-interface basis. For example, %Interfaces can tell you how many UDP
+    datagrams are recorded in the trace for each interface, how many TCP
+    SYNs are recorded, and so on.
+
+    %Trace contains general information regarding the trace (date, number of
+    records, duration, number of interfaces, etc.) as well as the aggregate
+    data across all interfaces. As such, %Trace will report the total number
+    of UDP datagrams in the trace, the total number of TCP SYNs, and so on.
+
+    Both %Trace and %Interfaces are initialized and populated by
+    process_trace. The recommended way to get the trace summary information
+    is by calling write_trace_summary, which stores the contents of %Trace
+    in a CSV-formated text file, as shown in SYNOPSIS.
+
+    Neither %Trace nor %Interfaces are exported by default and are not
+    designed to be accessed directly by user code. However, if you know what
+    you are doing, you can get a reference to %Trace by calling
+    get_trace_summary_href. If you choose to do so, the following
+    subsections explain how you can access some of the information stored in
+    %Trace. See also Taking advantage of %Trace.
 
    General Trace Information
     $Trace{filename}
@@ -137,6 +152,9 @@ DESCRIPTION
 
     $Trace{records}
         Number of records in the trace.
+
+    $Trace{interfaces}
+        Number of interfaces recorded in the trace.
 
     $Trace{unidirectional}
         True, if each interface carries unidirectional traffic.
@@ -276,6 +294,11 @@ FUNCTIONS
 
     returns 10.0.0.12.
 
+  get_interfaces_href
+     get_interfaces_href
+
+    Returns a hash *reference* to %Interfaces.
+
   get_trace_summary_href
      get_trace_summary_href
 
@@ -287,7 +310,7 @@ FUNCTIONS
      process_trace FILENAME, NUMBER, TEXT_FILENAME
 
     If called in a void context process_trace() examines the binary TSH
-    trace stored in FILENAME, and populates %Trace.
+    trace stored in FILENAME, and populates %Trace and %Interfaces.
 
     NUMBER specifies the capacity of the monitored link in bits per second
     (b/s). If not specified, it defaults to 155,520,000.
@@ -406,6 +429,16 @@ FUNCTIONS
     module. By default "Net::Traces::TSH" remains "silent". Call verbose()
     to see trace processing progress indicators on standard error.
 
+  write_interface_summaries
+     write_interface_summaries FILE_PREFIX
+     write_interface_summaries
+
+    Writes a CSV summary similar to what write_trace_summary() generates for
+    each interface in the trace (see %Interfaces). Each summary file has a
+    ".if-X.csv" suffix, where X is the number of the interface. If
+    FILE_PREFIX is provided write_interface_summaries() will append to it
+    this standard suffix (indicative of the interface).
+
   write_trace_summary
      write_trace_summary FILENAME
      write_trace_summary
@@ -431,13 +464,15 @@ EXPORTS
     None by default.
 
   Exportable
-    date_of() get_IP_address() get_trace_summary_href() numerically()
-    process_trace() records_in() verbose() write_trace_summary()
+    date_of() get_IP_address() get_interfaces_href()
+    get_trace_summary_href() numerically() process_trace() records_in()
+    verbose() write_trace_summary()
 
     In addition, the following export tags are defined:
 
     :traffic_analysis
-        verbose() process_trace() write_trace_summary()
+        verbose() process_trace() write_interface_summaries()
+        write_trace_summary()
 
     :trace_information
         date_of() records_in()
@@ -447,7 +482,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.09.
+    This is "Net::Traces::TSH" version 0.10.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at

@@ -1,8 +1,16 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.10 Thu Jun 10 2004
+   - Code reorganization and simplification.
+   - Added get_interfaces_href() and write_interface_summaries(). One
+     can now get statistics on per-interface basis in a way similar to
+     get_trace_summary_href()  and write_trace_summary(), respectively.
+   - Added write_summary(), an internal, non-exportable utility function.
+   - Additional tests released.
+
 0.09 Mon Jun 7 2004
-   - Provide summary statistics on a per-interface basis in addition
-     to the aggregate statistics. (POD to be added.)
+   - Module can now provide summary statistics on a per-interface
+     basis in addition to the aggregate statistics. (POD to be added.)
    - POD editorial changes.
    - Renamed %Trace_Summary to %Trace.
    - Updated __DATA__ section with the latest IANA Protocol Numbers

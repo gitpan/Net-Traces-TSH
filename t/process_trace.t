@@ -3,17 +3,30 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 31};
-use Net::Traces::TSH 0.09 qw( process_trace get_trace_summary_href);
+BEGIN {
+  if ( $^O =~ m/MSWin/ ) {
+    plan tests => 61
+  }
+  else {
+    plan tests => 63
+  }
+};
+
+use Net::Traces::TSH 0.10 qw(
+                              process_trace
+                              get_trace_summary_href
+                              get_interfaces_href
+                             );
 ok(1);
 
-process_trace 't/sample.tsh';
+process_trace 't/sample_input/sample.tsh';
 ok(1);
 
 my $trace_href = get_trace_summary_href;
+
 ok(1);
 
-ok($trace_href->{filename}, 't/sample.tsh');
+ok($trace_href->{filename}, 't/sample_input/sample.tsh');
 
 ok($trace_href->{IP}{'Total Packets'}, 1000);
 ok($trace_href->{IP}{'Total Bytes'}, 356_422);
@@ -25,8 +38,54 @@ ok($trace_href->{Transport}{TCP}{'Total Bytes'}, 326_308);
 ok($trace_href->{Transport}{UDP}{'Total Packets'}, 133);
 ok($trace_href->{Transport}{UDP}{'Total Bytes'}, 28_198);
 
-process_trace 't/sample.tsh', undef, 't/local.tcpdump';
+$trace_href = get_interfaces_href;
+
+ok($trace_href->{1}{IP}{'Total Packets'}, 673);
+ok($trace_href->{1}{IP}{'Total Bytes'}, 155_059);
+ok($trace_href->{1}{IP}{'MF Bytes'}, undef);
+
+ok($trace_href->{1}{Transport}{ICMP}{'Total Packets'}, 19);
+ok($trace_href->{1}{Transport}{ICMP}{'Total Bytes'}, 1532);
+
+ok($trace_href->{1}{Transport}{TCP}{'Total ACKs'}, 302);
+ok($trace_href->{1}{Transport}{TCP}{'Cumulative ACKs'}, 253);
+ok($trace_href->{1}{Transport}{TCP}{'Options ACKs'}, 49);
+ok($trace_href->{1}{Transport}{TCP}{'DF Bytes'}, 130_332);
+
+ok($trace_href->{1}{Transport}{TCP}{awnd}{46424}, 1);
+ok($trace_href->{1}{Transport}{TCP}{rwnd}{10767}, 1);
+ok($trace_href->{1}{Transport}{TCP}{rwnd}{65535}, 46);
+ok($trace_href->{1}{Transport}{TCP}{SYN}{28}, 246);
+ok($trace_href->{1}{Transport}{TCP}{'SYN/ACK'}{20}, 1);
+
+ok($trace_href->{1}{Transport}{UDP}{'Packet Size'}{40}, 5);
+ok($trace_href->{1}{Transport}{ICMP}{'Packet Size'}{92}, 13);
+
+ok($trace_href->{2}{IP}{'Total Packets'}, 327);
+ok($trace_href->{2}{IP}{'Total Bytes'}, 201_363);
+ok($trace_href->{2}{IP}{'MF Bytes'}, undef);
+
+ok($trace_href->{2}{Transport}{ICMP}{'Total Packets'}, 3);
+ok($trace_href->{2}{Transport}{ICMP}{'Total Bytes'}, 168);
+
+ok($trace_href->{2}{Transport}{TCP}{'Total ACKs'}, 274);
+ok($trace_href->{2}{Transport}{TCP}{'Cumulative ACKs'}, 253);
+ok($trace_href->{2}{Transport}{TCP}{'Options ACKs'}, 21);
+ok($trace_href->{2}{Transport}{TCP}{'DF Bytes'}, 195_324);
+
+ok($trace_href->{2}{Transport}{TCP}{rwnd}{24616}, 3);
+ok($trace_href->{2}{Transport}{TCP}{awnd}{49640}, undef);
+
+ok($trace_href->{2}{Transport}{UDP}{'Packet Size'}{38}, 1);
+ok($trace_href->{2}{Transport}{TCP}{'Packet Size'}{40}, 71);
+ok($trace_href->{2}{Transport}{ICMP}{'Packet Size'}{56}, 3);
+ok($trace_href->{2}{IP}{'Packet Size'}{139}, 1);
+ok($trace_href->{2}{Transport}{TCP}{'Packet Size'}{728}, 19);
+
+process_trace 't/sample_input/sample.tsh', undef, 't/local.tcpdump';
 ok(1);
+
+$trace_href = get_trace_summary_href;
 
 ok($trace_href->{IP}{'Total Packets'}, 1000);
 ok($trace_href->{IP}{'Normal Packets'}, 1000);
@@ -38,7 +97,7 @@ ok($trace_href->{Transport}{TCP}{'Pure ACKs'}, 151);
 ok($trace_href->{Transport}{TCP}{'Options ACKs'}, 70);
 
 ok($trace_href->{Transport}{TCP}{'DF Bytes'}, 325_656);
-ok($trace_href->{Transport}{TCP}{'ECT Bytes'}, undef);
+ok($trace_href->{Transport}{TCP}{'ECT Bytes'}, 0);
 
 ok($trace_href->{Transport}{UDP}{'Normal Bytes'}, 28198);
 ok($trace_href->{Transport}{UDP}{'DF Bytes'}, 14096);
@@ -50,19 +109,17 @@ ok($trace_href->{Transport}{ICMP}{'DF Bytes'}, 336);
 ok($trace_href->{Transport}{Unknown}{'Total Bytes'}, 216);
 ok($trace_href->{Transport}{Unknown}{'Total Packets'}, 3);
 
-if ( $^O =~ m/MSWin/ ) {
-  skip "Skipping context diff between distribution ", "";
-  skip "t/sample.tcpdump and locally generated t/local.tcpdump", "";
-}
-else {
+unless ( $^O =~ m/MSWin/ ) {
   my $diff_avail = 0;
 
   eval {
-    $diff_avail = system('diff', 't/sample.tcpdump', 't/sample.tcpdump');
+    $diff_avail = system('diff', 't/sample_output/sample.tcpdump',
+                                 't/sample_output/sample.tcpdump');
   };
 
   skip ( $diff_avail >> 8, 
-         ok(system('diff', 't/local.tcpdump', 't/sample.tcpdump'), 0)
+         ok( system( 'diff', 't/local.tcpdump',
+                             't/sample_output/sample.tcpdump'), 0)
        );
 }
 
