@@ -4,8 +4,7 @@ use 5.6.1;
 use strict;
 use warnings;
 use Carp;
-use Data::Dumper;
-our $VERSION = 0.10;
+our $VERSION = 0.11;
 
 =head1 NAME
 
@@ -1535,7 +1534,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.10.
+This is C<Net::Traces::TSH> version 0.11.
 
 =head1 SEE ALSO
 

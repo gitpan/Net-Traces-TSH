@@ -482,7 +482,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.10.
+    This is "Net::Traces::TSH" version 0.11.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at

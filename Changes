@@ -1,5 +1,8 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.11 Sun Jun 13 2004
+   - Application tsh2tcpdump.pl 0.01 released. 
+
 0.10 Thu Jun 10 2004
    - Code reorganization and simplification.
    - Added get_interfaces_href() and write_interface_summaries(). One
