@@ -1,4 +1,9 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.02  Wed Mar 10
+	- Application pt.pl 0.01 released
+	- Additional tests released
+        - POD editorial changes
+
 0.01  Mon Mar  1
 	- original public release

@@ -12,15 +12,15 @@ SYNOPSIS
       #
       process_trace 'some_trace.tsh';
 
-      # Then, write a summary of the trace contents in some_trace.csv, in
+      # Then, write a summary of the trace contents to some_trace.csv, in
       # Comma-Separated Values (CSV) format
       #
       write_trace_summary 'some_trace.csv';
 
 ABSTRACT
     Net::Traces::TSH provides methods to analyze IP packet traces in Time
-    Sequenced Headers (TSH) format. The trace summary statistics are stored
-    in comma separated values (CSV), a platform independent text format. Use
+    Sequenced Headers (TSH) format. Trace summary statistics are stored in
+    comma separated values (CSV), a platform independent text format. Use
     Net::Traces::TSH to gather general information about a TSH packet trace,
     measure Transport protocol, DiffServ and ECN usage, and generate packet
     and segment size distributions. In addition, you can extract all TCP
@@ -34,18 +34,18 @@ INSTALLATION
      make test
      make install
 
-    In addition,
+    Moreover,
 
      perldoc perlmodinstall
 
-    will provide more information and options about installing Perl modules.
+    provides more information and options about installing Perl modules.
 
 DESCRIPTION
-    "Net::Traces::TSH" provides methods to analyze IP packet traces in Time
-    Sequenced Headers (TSH) format. TSH is a binary trace format. Each trace
-    record corresponds to an IP packet passing by a monitoring point. A TSH
-    record is 44 bytes long can be viewed as being composed of three
-    essentially distinct sections.
+    With "Net::Traces::TSH" you can analyze IP packet traces in Time
+    Sequenced Headers (TSH), a binary network trace format. Each 44-byte TSH
+    record corresponds to an IP packet passing by a monitoring point.
+    Although there are no explicit section delimiters, each record is
+    composed of three rather distinct sections.
 
     Time and Interface
         The first section uses 8 bytes to store the time (with microsecond
@@ -59,12 +59,11 @@ DESCRIPTION
         standard TCP segment header. The TCP checksum, urgent pointer, and
         TCP options (if any) are not included in a TSH record.
 
-    If a record does not correspond to a TCP segment, it is not clear (at
-    least to me) how to interpret the last section (remaining 16 bytes). As
-    such, "Net::Traces::TSH" makes no assumptions, and does not analyze in
-    detail packets from protocols other than TCP. That is,
-    "Net::Traces::TSH" reports on protocols other than TCP based on the
-    second section (IP header) only.
+    If a record does not correspond to a TCP segment, it is not clear how to
+    interpret the last section. As such, "Net::Traces::TSH" makes no
+    assumptions, and does not analyze in detail packets from protocols other
+    than TCP. That is, "Net::Traces::TSH" reports on protocols other than
+    TCP based on the second section (IP header) only.
 
     The following diagram illustrates a TSH record.
 
@@ -103,29 +102,26 @@ DESCRIPTION
     of Service field to accommodate Differentiated Services and Explicit
     Congestion Notification.
 
-    You can use "Net::Traces::TSH" to gather information from a TSH packet
-    trace, and perform a statistical analysis on Transport protocol usage,
-    the usage of DiffServ and ECN, get packet and segment size
-    distributions, and more. The trace summary statistics are stored in
-    comma separated values (CSV), a platform independent text format. In
-    addition, you can use "Net::Traces::TSH" to extract the aggregated
-    "good" and "bad" transmission periods in the packet trace.
+    For example, you can use "Net::Traces::TSH" to gather information from a
+    TSH packet trace, perform statistical analysis on Transport protocol,
+    DiffServ and ECN usage, and obtain packet and segment size
+    distributions. The trace summary statistics are stored in comma
+    separated values (CSV), a platform independent text format.
 
   Data Structures
     The data collected from a trace is stored is a hash called
     %Trace_Summary, the main data structure in "Net::Traces::TSH".
-    %Trace_Summary is initialized and then populated by "process_trace". The
+    %Trace_Summary is initialized and populated by process_trace. The
     recommended way to get the trace summary information is by calling
-    "write_trace_summary" to write the contents of %Trace_Summary in a CSV
-    formated text file, as shown in "SYNOPSIS".
+    write_trace_summary, which stores the contents of %Trace_Summary in a
+    CSV-formated text file, as shown in SYNOPSIS.
 
     %Trace_Summary is not exported by default and it is not intended to be
     accessed directly by user code. However, if you know what you are doing,
     you can get a reference to %Trace_Summary by calling
-    "get_trace_summary_href". If you choose to do so, the following
+    get_trace_summary_href. If you choose to do so, the following
     subsections explain how you can access some of the information stored in
-    %Trace_Summary, but they are not an exhaustive list. See also "Taking
-    advantage of %Trace_Summary".
+    %Trace_Summary. See also Taking advantage of %Trace_Summary.
 
    General Trace Information
     $Trace_Summary{filename}
@@ -135,10 +131,10 @@ DESCRIPTION
         The trace summary FILENAME.
 
     $Trace_Summary{starts}
-        The first timestamp in the trace.
+        The first trace timestamp, in seconds.
 
     $Trace_Summary{ends}
-        The last timestamp in the trace.
+        The last trace timestamp, in seconds.
 
     $Trace_Summary{records}
         Number of records in the trace.
@@ -148,12 +144,10 @@ DESCRIPTION
 
         False, if there is bidirectional traffic in at least one interface.
 
-        "undef" if process_trace() did not examine the direction of the
-        traffic
+        "undef" if traffic directionality was not examined.
 
     $Trace_Summary{Link Capacity}
-        The capacity of the monitored link in bits per second (b/s). If not
-        specified it is initialized by process_trace() to 155,520,000.
+        The capacity of the monitored link in bits per second (b/s).
 
    Internet Protocol
     $Trace_Summary{IP}{'Total Packets'}
@@ -176,14 +170,14 @@ DESCRIPTION
    Differentiated Services
     $Trace_Summary{IP}{'Normal Packets'}
     $Trace_Summary{IP}{ 'Normal Bytes'}
-        Number of IP packets and bytes, respectively, with no DiffServ and
-        no ECN bits set. These packets request no particular treatment (best
-        effort traffic).
+        Number of IP packets and bytes, respectively, requesting no
+        particular treatment (best effort traffic). None of the DiffServ and
+        ECN bits are set.
 
     $Trace_Summary{IP}{'Class Selector Packets'}
     $Trace_Summary{IP}{'Class Selector Bytes'}
-        Number of IP packets and bytes, respectively, with the Class
-        Selector bits set.
+        Number of IP packets and bytes, respectively, with Class Selector
+        bits set.
 
     $Trace_Summary{IP}{'AF PHB Packets'}
     $Trace_Summary{IP}{'AF PHB Bytes'}
@@ -209,11 +203,11 @@ DESCRIPTION
 
    Transport Protocols
     Besides the summary information about the trace itself and statistics
-    about IP, %Trace_Summary gathers information about transport protocols
-    based on the IP header. %Trace_Summary maintains the same statistics
-    mentioned in the previous section for TCP, UDP and all transport
-    protocols with an IANA assigned number, provided that the trace contains
-    packets of that protocol. For example,
+    about IP, %Trace_Summary maintains information about the transport
+    protocols present in the trace. Based on the IP header, %Trace_Summary
+    maintains the same statistics mentioned in the previous section for TCP,
+    UDP and other transport protocols with an IANA assigned number. For
+    example,
 
     $Trace_Summary{Transport}{TCP}{'Total Packets'}
     $Trace_Summary{Transport}{TCP}{'Total Bytes'}
@@ -264,10 +258,11 @@ FUNCTIONS
 
     Converts the epoch timestamp, typically part of a TSH trace FILENAME
     downloaded from http://pma.nlanr.net/Traces to a human readable date. If
-    FILENAME contains a valid timestamp, date_of returns the corresponding
-    GMT date as a string. Otherwise, date_of returns *false*.
+    FILENAME contains a valid timestamp, date_of() returns the corresponding
+    GMT date as a string. Otherwise, it returns an empty string, i.e.
+    *false*.
 
-    For example
+    For example,
 
      date_of 'ODU-1073132115.tsh'
 
@@ -276,11 +271,11 @@ FUNCTIONS
   get_IP_address
      get_IP_address INTEGER
 
-    Converts a 32-bit integer to an IP address. For example
+    Converts a 32-bit integer to an IP address. For example,
 
      get_IP_address(167772172)
 
-    returns "10.0.0.12".
+    returns 10.0.0.12.
 
   get_trace_summary_href
      get_trace_summary_href
@@ -293,10 +288,10 @@ FUNCTIONS
      process_trace FILENAME, NUMBER, TEXT_FILENAME
 
     If called in a void context process_trace() examines the binary TSH
-    trace stored in FILENAME, and gathers statistics to populate
-    %Trace_Summary. NUMBER specifies the capacity of the monitored link in
-    bits per second. Presumably, NUMBER should equal the capacity of the
-    link where the trace was captured.
+    trace stored in FILENAME, and populates %Trace_Summary.
+
+    NUMBER specifies the capacity of the monitored link in bits per second
+    (b/s). If not specified, it defaults to 155,520,000.
 
     If called in a list context process_trace() gathers the same statistics
     and in addition it extracts all TCP flows and TCP data-carrying segments
@@ -382,7 +377,7 @@ FUNCTIONS
   records_in
      records_in FILENAME
 
-    Calculates the number to records in FILENAME and returns the "expected"
+    Estimates the number to records in FILENAME and returns the "expected"
     number of records in the trace, which must an integer. If not an
     integer, records_in() returns *false*.
 
@@ -397,15 +392,16 @@ FUNCTIONS
      write_trace_summary FILENAME
      write_trace_summary
 
-    Writes the contents of %Trace_Summary to FILENAME. If FILENAME is not
-    specified, write_trace_summary() will create one for you by appending
-    the suffix *.csv* to the filename of the trace being processed. The
-    summary is stored in comma separated values (CSV) format, a platform
-    independent text format, excellent for storing tabular data. CSV is both
-    human-readable and suitable for further analysis using Perl or direct
-    import to a spreadsheet application. Although FILENAME does not need to
-    have a *.csv* suffix, choosing a FILENAME ending in ".csv" is
-    recommended.
+    Writes the contents of %Trace_Summary to FILENAME in comma separated
+    values (CSV) format, a platform independent text format, excellent for
+    storing tabular data. CSV is both human-readable and suitable for
+    further analysis using Perl or direct import to a spreadsheet
+    application. Although not required, it is recommended that FILENAME
+    should have a *.csv* suffix.
+
+    If FILENAME is not specified, write_trace_summary() will create one for
+    you by appending the suffix *.csv* to the filename of the trace being
+    processed.
 
     If you want FILENAME to contain meaningful data you should call
     write_trace_summary() *after* calling process_trace().
@@ -433,17 +429,17 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.01.
+    This is "Net::Traces::TSH" version 0.02.
 
 SEE ALSO
-    The NLANR MOAT Passive Measurement and Analysis (PMA) web site
-    (http://pma.nlanr.net/PMA) provides more details on the TSH format and
-    the process of collecting packet traces. The site also features a set of
-    open source tools you can download, including several converters from
-    other packet trace formats to TSH.
+    The NLANR MOAT Passive Measurement and Analysis (PMA) web site at
+    http://pma.nlanr.net/PMA provides more details on the process of
+    collecting packet traces. The site features a set of Perl programs you
+    can download, including several converters from other packet trace
+    formats to TSH.
 
-    TSH trace files can be downloaded from the NLANR/PMA trace repository
-    (http://pma.nlanr.net/Traces). The site contains a variety of traces
+    TSH trace files can be downloaded from the NLANR/PMA trace repository at
+    http://pma.nlanr.net/Traces . The site contains a variety of traces
     gathered from several monitoring points at university campuses and
     (Giga)PoPs connected to a variety of large and small networks.
 
@@ -469,7 +465,7 @@ SEE ALSO
     http://www.ietf.org/rfc/rfc3168.txt
 
 AUTHOR
-    Kostas Pentikousis, kostas@cpan.org
+    Kostas Pentikousis, kostas@cpan.org.
 
 ACKNOWLEDGMENTS
     Professor Hussein Badr provided invaluable guidance while crafting the

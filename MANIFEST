@@ -3,4 +3,7 @@ Makefile.PL
 MANIFEST
 README
 TSH.pm
-t/1.t
+t/core.t
+t/date_of.t
+t/get_IP_address.t
+applications/pt.pl
