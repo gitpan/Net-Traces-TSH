@@ -1,17 +1,31 @@
 #!/usr/local/bin/perl
 use strict;
 use warnings;
+use Getopt::Std;
 use Net::Traces::TSH qw( :traffic_analysis );
 
-my $VERSION = 0.01;
+my $VERSION = 0.03;
 
-die "Usage:  perl pt.pl TRACE\n" unless $#ARGV == 0;
+our $opt_v;
+getopts('v');
 
-verbose;
+if ($opt_v) {
+  verbose;
 
-process_trace shift;
+  print "\npt.pl ", $VERSION, ' (Net::Traces::TSH version ',
+    $Net::Traces::TSH::VERSION, ")\n\n";
+}
+
+my $trace = shift;
+
+die "pt.pl: missing TRACE\nUsage: perl pt.pl [-v] TRACE\n"
+  unless $trace;
+
+process_trace $trace;
 
 write_trace_summary;
+
+__END__
 
 =head1 NAME
 
@@ -19,13 +33,14 @@ pt.pl - Process a single TSH trace using L<Net::Traces::TSH|Net::Traces::TSH>
 
 =head1 SYNOPSIS
 
- perl pt.pl TRACE
+ perl pt.pl [-v] TRACE
 
 =head1 DESCRIPTION
 
 C<pt.pl> is a simple application based on
 L<Net::Traces::TSH|Net::Traces::TSH>: It processes F<TRACE> and
-generates the overall trace summary.
+generates the overall trace summary. Use the C<-v> option to display
+version and progress information.
 
 =head2 Performance Evaluation
 
@@ -108,11 +123,11 @@ mentioned above and different TSH trace sizes.
 
 =head1 DEPENDENCIES
 
-L<Net::Traces::TSH|Net::Traces::TSH>
+L<Getopt::Std>, L<Net::Traces::TSH|Net::Traces::TSH>
 
 =head1 VERSION
 
-This is C<pt.pl> version 0.01.
+This is C<pt.pl> version 0.03.
 
 =head1 AUTHOR
 
@@ -127,5 +142,3 @@ redistribute it and/or modify it under the same terms as Perl itself.
 
 
 =cut
-
-__END__

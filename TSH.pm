@@ -2,9 +2,10 @@ package Net::Traces::TSH;
 
 use 5.006001;
 use strict;
+use warnings;
 use Carp;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 =head1 NAME
 
@@ -589,7 +590,7 @@ sub process_trace( $ ; $$ ) {
     or croak "No trace filename provided";
 
   open(INPUT, '<', $Trace_Summary{filename})
-    or croak 'Cannot open ', $Trace_Summary{filename}, ' for processing. ', $!;
+    or croak "Cannot open $Trace_Summary{filename} for processing";
 
   binmode INPUT; # Needed for non-UNIX OSes; no harm in UNIX
 
@@ -1301,6 +1302,17 @@ PERIODS
     print LOG
       "\n\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
 
+    # Some of the entries in the hash are naturally uninitialized. For
+    # example, for a given advertized window size, we may had SYN(s)
+    # with options (soft count), but no SYN(s) without options (hard
+    # count). We take advantage of Perl's automatic conversion of
+    # uninitialized values to an empty string (""). However, with
+    # warnings on, this may lead the novice user that something REALLY
+    # BAD happened, which is not the case. So disable these particular
+    # warnings for the rest of the block.
+    #
+    no warnings qw(uninitialized);
+
     foreach ( sort numerically keys %{$Trace_Summary{Transport}{TCP}{rwnd}} ) {
       print LOG "\n$_,",
 	$Trace_Summary{Transport}{TCP}{rwnd}{$_}
@@ -1315,6 +1327,8 @@ PERIODS
     print LOG
       "\n\nTCP OPTIONS NEGOTIATION\n",
       'TCP Header Length (Bytes),SYN,SYN/ACK';
+
+    no warnings qw(uninitialized);
 
     foreach ( sort numerically keys %{$Trace_Summary{Transport}{TCP}{SYN}} ) {
       print LOG "\n$_,",
@@ -1398,7 +1412,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.02.
+This is C<Net::Traces::TSH> version 0.03.
 
 =head1 SEE ALSO
 

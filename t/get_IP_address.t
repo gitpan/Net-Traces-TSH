@@ -3,8 +3,9 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 5 };
-use Net::Traces::TSH 0.02 qw( get_IP_address );
+BEGIN { plan tests => 6 };
+use Net::Traces::TSH 0.03 qw( get_IP_address );
+ok(1);
 
 ok(get_IP_address 167772172, '10.0.0.12');
 ok(get_IP_address 167772174, '10.0.0.14');
