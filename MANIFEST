@@ -5,6 +5,7 @@ META.yml
 README
 TSH.pm
 t/core.t
+t/configure.t
 t/date_of.t
 t/get_IP_address.t
 t/get_interfaces_list.t
@@ -17,6 +18,8 @@ t/sample_output/sample.csv
 t/sample_output/sample.if-1.csv
 t/sample_output/sample.if-2.csv
 t/sample_output/sample.tcpdump
+t/sample_output/sample.tsh-if1.bin
+t/sample_output/sample.tsh-if2.bin
 documentation/sample-summary.pod
 applications/pt.pl
 applications/tsh2tcpdump.pl

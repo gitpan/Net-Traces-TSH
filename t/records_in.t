@@ -5,7 +5,7 @@ use Test;
 
 BEGIN { plan tests => 3 };
 
-use Net::Traces::TSH 0.12 qw( records_in );
+use Net::Traces::TSH 0.13 qw( records_in );
 ok(1);
 
 # sample.tsh is a legit TSH trace file... err, at least it has an

@@ -4,7 +4,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 15 };
-use Net::Traces::TSH 0.12 qw( date_of );
+use Net::Traces::TSH 0.13 qw( date_of );
 ok(1);
 
 ok(date_of 'AIX-1072917725-1.csv', 'Thu Jan  1 00:42:05 2004 GMT');

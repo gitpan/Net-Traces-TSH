@@ -2,16 +2,10 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Net::Traces::TSH 0.12 qw( verbose process_trace);
+use Net::Traces::TSH 0.13 qw( configure process_trace);
 
 our $opt_v;
 getopts('v');
-
-if ($opt_v) {
-  verbose;
-
-  print STDERR "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
-}
 
 my $trace = shift;
 
@@ -20,7 +14,16 @@ die "Usage: perl tshpt.pl [-v] TRACE [TCPDUMP_FILENAME]\n"
 
 my $tcpdump = shift || "$trace.tcpdump";
 
-process_trace $trace, undef, $tcpdump;
+if ($opt_v) {
+  configure(Verbosity => 1, tcpdump => $tcpdump);
+
+  print STDERR "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
+}
+else {
+  configure(tcpdump => $tcpdump);
+}
+
+process_trace $trace;
 
 __END__
 
@@ -39,7 +42,7 @@ L<Net::Traces::TSH|Net::Traces::TSH>: It converts the binary TSH
 F<TRACE> to tcpdump text format, stored in F<TCPDUMP_FILENAME>.  If
 F<TCPDUMP_FILENAME> is ommited, C<tsh2tcpdump> will store the result
 of the conversion to F<TRACE.tcpdump>. The text output is similar to
-what F<tcpdump> with options C<-n> and C<-S> would have produced
+what F<tcpdump> with options C<-n> and C<-S> would have produced.
 
 Use the C<-v> option to display version and progress information.
 
@@ -68,7 +71,7 @@ L<Getopt::Std>, L<Net::Traces::TSH|Net::Traces::TSH>
 
 =head1 VERSION
 
-This is C<tsh2tcpdump.pl> version 0.01.
+This is C<tsh2tcpdump.pl> version 0.02.
 
 =head1 AUTHOR
 

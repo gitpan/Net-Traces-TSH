@@ -6,7 +6,7 @@ use Test;
 
 BEGIN { plan tests => 7 };
 
-use Net::Traces::TSH 0.12 qw( process_trace get_interfaces_list );
+use Net::Traces::TSH 0.13 qw( process_trace get_interfaces_list );
 ok(1);
 
 process_trace 't/sample_input/sample.tsh' and ok(1);

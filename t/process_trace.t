@@ -6,17 +6,18 @@ use Test;
 
 BEGIN {
   if ( $^O =~ m/MSWin/ ) {
-    plan tests => 63
+    plan tests => 65
   }
   else {
-    plan tests => 65
+    plan tests => 71
   }
 };
 
-use Net::Traces::TSH 0.12 qw(
-                              process_trace
+use Net::Traces::TSH 0.13 qw(
+                              process_trace configure
                               get_trace_summary_href
                               get_interfaces_href
+
                              );
 ok(1);
 
@@ -100,7 +101,11 @@ ok($trace_href->{2}{Transport}{ICMP}{'Packet Size'}{56}, 3);
 ok($trace_href->{2}{IP}{'Packet Size'}{139}, 1);
 ok($trace_href->{2}{Transport}{TCP}{'Packet Size'}{728}, 19);
 
-process_trace 't/sample_input/sample.tsh','t/local.tcpdump';
+configure(tcpdump => 't/local.tcpdump', ns2 => 't/sample.tsh');
+ok($Net::Traces::TSH::options{ns2} eq 't/sample.tsh');
+ok(1);
+
+process_trace 't/sample_input/sample.tsh';
 ok(1);
 
 $trace_href = get_trace_summary_href;
@@ -135,11 +140,22 @@ unless ( $^O =~ m/MSWin/ ) {
                                  't/sample_output/sample.tcpdump');
   };
 
-  skip ( $diff_avail >> 8, 
+  skip ( $diff_avail >> 8,
          ok( system( 'diff', 't/local.tcpdump',
                              't/sample_output/sample.tcpdump'), 0)
        );
+  skip ( $diff_avail >> 8,
+         ok( system( 'diff', 't/sample.tsh-if1.bin',
+                             't/sample_output/sample.tsh-if1.bin'), 0)
+       );
+skip ( $diff_avail >> 8,
+         ok( system( 'diff', 't/sample.tsh-if2.bin',
+                             't/sample_output/sample.tsh-if2.bin'), 0)
+       );
+
 }
 
 unlink('t/local.tcpdump');
+unlink('t/sample.tsh-if1.bin');
+unlink('t/sample.tsh-if2.bin');
 ok(1);
