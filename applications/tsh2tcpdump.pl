@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Net::Traces::TSH qw( verbose process_trace);
+use Net::Traces::TSH 0.12 qw( verbose process_trace);
 
 our $opt_v;
 getopts('v');

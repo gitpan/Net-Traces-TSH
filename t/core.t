@@ -4,5 +4,5 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 1 };
-use Net::Traces::TSH 0.10;
+use Net::Traces::TSH 0.12;
 ok(1);

@@ -5,10 +5,6 @@ Records,1000
 Number of Interfaces,2
 Link Capacity,155520000
 
-TRAFFIC DENSITY
-,Pkts/s,Bytes/Pkt,b/s
-IP Total,1067,356,3041607
-TCP Total,898,388,2784623
 
 IP STATISTICS (PACKETS)
 ,,Fragmentation,,Explicit Congestion Notification,,Differentiated Services,,,,IP Options

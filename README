@@ -37,12 +37,12 @@ INSTALLATION
      make install
 
 DESCRIPTION
-    With "Net::Traces::TSH" you can analyze Internet Protocol (IP) packet
-    traces in time sequenced headers (TSH), a binary network trace format.
-    Daily TSH traces are available from the NLANR PMA web site. Each 44-byte
-    TSH record corresponds to an IP packet passing by a monitoring point.
-    Although there are no explicit delimiters, each record is composed of
-    three sections.
+    "Net::Traces::TSH" can assist you in analyzing Internet Protocol (IP)
+    packet traces in Time Sequenced Headers (TSH) format, a binary network
+    trace format. Daily TSH traces are available from the NLANR PMA web
+    site. Each 44-byte TSH record corresponds to an IP packet passing by a
+    monitoring point. Although there are no explicit delimiters, each record
+    is composed of three sections.
 
     Time and Interface
         The first section uses 8 bytes to store the time (with microsecond
@@ -95,49 +95,63 @@ DESCRIPTION
 
     This diagram is an adaptation of the original TSH diagram (found on the
     NLANR PMA web site), which reflects the changes due to the addition of
-    Explicit Congestion Notification (ECN) in the TCP header flags. Keep in
-    mind that recent Internet Engineering Task Force (IETF) Requests for
-    Comments (RFCs) have deprecated the IP header Type of Service field in
-    favor of Differentiated Services and Explicit Congestion Notification.
+    Explicit Congestion Notification (ECN) in the TCP header flags. Also,
+    keep in mind that recent Internet Engineering Task Force (IETF) Requests
+    for Comments (RFCs) have deprecated the IP header *Type of Service*
+    field in favor of Differentiated Services and Explicit Congestion
+    Notification.
 
-    For example, you can use "Net::Traces::TSH" to gather information from a
-    TSH packet trace, perform statistical analysis on Transport protocol,
+    You can use "Net::Traces::TSH" to gather information from a TSH packet
+    trace, perform statistical analysis on Transport protocol,
     Differentiated Services (DiffServ) and ECN usage, and obtain packet and
     segment size distributions. The trace summary statistics are stored in
     comma separated values (CSV), a platform independent text format.
 
   Data Structures
-    A single TSH trace can contain records from several different
-    interfaces. For example, daily TSH traces from the NLANR PMA repository
-    usually contain records from two interfaces (incoming and outgoing).
-    "Net::Traces::TSH" uses two main data structures to record trace
-    information: The hashes %Interfaces and %Trace.
+    A single TSH trace may contain records for packets observed on several
+    different interfaces. For example, the daily TSH traces from the NLANR
+    PMA repository typically contain records from two different interfaces.
+    In such cases, incoming and outgoing traffic can be differentiated based
+    on the interface number (despite the scrabling of IP addresses to
+    protect privacy). "Net::Traces::TSH" users may be interested in
+    collecting statistical information for each interface separately or
+    aggregating across the entire trace. "Net::Traces::TSH" uses two hashes
+    to maintain these statistics: %Interfaces and %Trace.
 
     %Interfaces contains counts of several protocol particulars on a
-    per-interface basis. For example, %Interfaces can tell you how many UDP
-    datagrams are recorded in the trace for each interface, how many TCP
-    SYNs are recorded, and so on.
+    per-interface basis. For example, %Interfaces can tell you how many IP
+    packets, TCP segments, and UDP datagrams were recorded in the trace for
+    each interface.
 
-    %Trace contains general information regarding the trace (date, number of
+    %Trace contains general information about the trace (date, number of
     records, duration, number of interfaces, etc.) as well as the aggregate
-    data across all interfaces. As such, %Trace will report the total number
-    of UDP datagrams in the trace, the total number of TCP SYNs, and so on.
+    data points across all interfaces. As such, %Trace will report the
+    *total* number of UDP datagrams in the trace, the total number of TCP
+    SYNs, and so on.
 
-    Both %Trace and %Interfaces are initialized and populated by
-    process_trace. The recommended way to get the trace summary information
-    is by calling write_trace_summary, which stores the contents of %Trace
-    in a CSV-formated text file, as shown in SYNOPSIS.
+    Both %Trace and %Interfaces are *initialized and populated* by
+    process_trace. The recommended way to get the trace summary information,
+    after processing a trace is to call write_trace_summary, which stores
+    the contents of %Trace in a CSV-formated text file, as shown in
+    SYNOPSIS. Similarly, If you want summaries for the traffic on each
+    interface, use write_interface_summaries.
 
-    Neither %Trace nor %Interfaces are exported by default and are not
-    designed to be accessed directly by user code. However, if you know what
-    you are doing, you can get a reference to %Trace by calling
-    get_trace_summary_href. If you choose to do so, the following
-    subsections explain how you can access some of the information stored in
-    %Trace. See also Taking advantage of %Trace.
+    Neither %Trace nor %Interfaces are exported by default and are not meant
+    to be accessed directly by user code. However, if you know what you are
+    doing, you can get a reference to %Trace by calling
+    get_trace_summary_href, and a reference to %Interfaces by calling
+    get_interfaces_href. If you choose to do so, the following subsections
+    explain how you can access some of the information stored in %Trace. The
+    %Interfaces structure is virtually the same only lacking the "general
+    trace information" part. See also Using the Net::Trace::TSH trace
+    summary hashes.
 
    General Trace Information
     $Trace{filename}
         The trace FILENAME.
+
+    $Trace{date}
+        The estimated date of the trace (see date_of).
 
     $Trace{summary}
         The trace summary FILENAME.
@@ -152,6 +166,10 @@ DESCRIPTION
 
     $Trace{records}
         Number of records in the trace.
+
+        Similarly, if *$if* is the interface number,
+        $Interfaces{$if}{records} contains the number or records
+        corresponding to packets observed on interface *$if*.
 
     $Trace{interfaces}
         Number of interfaces recorded in the trace.
@@ -173,6 +191,13 @@ DESCRIPTION
         number of IP packets should equal the number of records in the
         trace.
 
+        As mentioned earlier, %Trace has virtually the same structure as
+        %Interfaces. Therefore, if *$if* is the interface number,
+        $Interfaces{$if}{IP}{'Total Packets'} and
+        $Interfaces{$if}{IP}{'Total Bytes'} contain the number of IP packets
+        and bytes, respectively, observed on interface *$if*. The same
+        "rule" applies to all %Trace fields presented below.
+
    Fragmentation
     $Trace{IP}{'DF Packets'}
     $Trace{IP}{'DF Bytes'}
@@ -188,8 +213,8 @@ DESCRIPTION
     $Trace{IP}{'Normal Packets'}
     $Trace{IP}{'Normal Bytes'}
         Number of IP packets and bytes, respectively, requesting no
-        particular treatment (best effort traffic). None of the DiffServ and
-        ECN bits are set.
+        particular treatment (best effort traffic). No DiffServ or ECN bits
+        are set.
 
     $Trace{IP}{'Class Selector Packets'}
     $Trace{IP}{'Class Selector Bytes'}
@@ -210,7 +235,8 @@ DESCRIPTION
     $Trace{IP}{'ECT Packets'}
     $Trace{IP}{'ECT Bytes'}
         Number of IP packets and bytes, respectively, with either of the ECT
-        bits set. These packets should be carrying ECN-aware traffic.
+        bits set. These packets should be carrying traffic from ECN-aware
+        hosts.
 
     $Trace{IP}{'CE Packets'}
     $Trace{IP}{'CE Bytes'}
@@ -222,8 +248,9 @@ DESCRIPTION
     Besides the summary information about the trace itself and statistics
     about IP, %Trace maintains information about the transport protocols
     present in the trace. Based on the IP header, %Trace maintains the same
-    statistics mentioned in the previous section for TCP, UDP and other
-    transport protocols with an IANA assigned number. For example,
+    statistics mentioned in the previous section for all transport protocols
+    with an IANA assigned number (including, of course, TCP and UDP). For
+    example,
 
     $Trace{Transport}{TCP}{'Total Packets'}
     $Trace{Transport}{TCP}{'Total Bytes'}
@@ -238,15 +265,15 @@ DESCRIPTION
     $Trace{Transport}{ICMP}{'DF Bytes'}
         Number of ICMP packets and bytes, respectively, with the DF bit set.
 
-  Taking advantage of %Trace
-    The following example creates the trace summary file only if the TCP
-    traffic in terms of bytes accounts for more than 90% of the total IP
-    traffic in the trace.
+  Using the Net::Trace::TSH trace summary hashes
+    The following example creates the trace summary file only if TCP
+    accounts for more than 90% of the total IP traffic, in terms of bytes.
 
      # Explicitly import process_trace(), write_trace_summary(), and
      # get_trace_summary_href():
 
-     use Net::Traces::TSH qw( process_trace write_trace_summary
+     use Net::Traces::TSH qw( process_trace
+                              write_trace_summary
                               get_trace_summary_href
                             );
 
@@ -258,12 +285,13 @@ DESCRIPTION
      #
      my $ts_href = get_trace_summary_href;
 
-     # ...and create a summary only if the condition is met.
+     # ...and generate a summary only if the condition is met.
      #
      write_trace_summary
         if ( ( $ts_href->{Transport}{TCP}{'Total Bytes'}
                / $ts_href->{IP}{'Total Bytes'}
-             ) > 0.9);
+             ) > 0.9
+           );
 
 FUNCTIONS
     "Net::Traces::TSH" does not export any functions by default. The
@@ -282,7 +310,10 @@ FUNCTIONS
 
     returns "Sat Jan 3 12:15:15 2004 GMT".
 
-    If the FILENAME does not contain a timestamp date_of() returns *false*.
+    If the FILENAME does not contain a timestamp, date_of() returns *false*.
+
+    Note that there is nothing special about FILENAME: It can be any string.
+    The goal here is to get an idea of the period the trace was collected.
 
   get_IP_address
      get_IP_address INTEGER
@@ -299,6 +330,13 @@ FUNCTIONS
 
     Returns a hash *reference* to %Interfaces.
 
+  get_interfaces_list
+     get_interfaces_list
+
+    In list context returns a sorted list of all interfaces recorded in the
+    trace. In scalar context returns the number of unique interfaces in the
+    trace.
+
   get_trace_summary_href
      get_trace_summary_href
 
@@ -306,18 +344,45 @@ FUNCTIONS
 
   process_trace
      process_trace FILENAME
-     process_trace FILENAME, NUMBER
-     process_trace FILENAME, NUMBER, TEXT_FILENAME
+     process_trace FILENAME, TCPDUMP_OUTPUT
+     process_trace FILENAME, TCPDUMP_OUTPUT, NUMBER
 
     If called in a void context process_trace() examines the binary TSH
     trace stored in FILENAME, and populates %Trace and %Interfaces.
 
+    If TCPDUMP_OUTPUT is specified, process_trace() generates a text file
+    based on the trace records in a format similar to the modified output of
+    tcpdump, as presented in *TCP/IP Illustrated Volume 1* by W. R. Stevens
+    (see pp. 230-231).
+
+    You can use such an output as input to other tools, present real traffic
+    scenarios in a classroom, or simply "eyeball" the trace. For example,
+    here are the first ten lines of the contents of such a file:
+
+     0.000000000 10.0.0.1.6699 > 10.0.0.2.55309: . ack 225051666 win 65463
+     0.000014000 10.0.0.3.80 > 10.0.0.4.14401: S 457330477:457330477(0) ack 810547499 win 34932
+     0.000014000 10.0.0.1.6699 > 10.0.0.2.55309: . 3069529864:3069531324(1460) ack 225051666 win 65463
+     0.000024000 10.0.0.5.12119 > 10.0.0.6.80: F 2073668891:2073668891(0) ack 183269290 win 64240
+     0.000034000 10.0.0.7.4725 > 10.0.0.8.445: S 3152140131:3152140131(0) win 16384
+     0.000067000 10.0.0.1.6699 > 10.0.0.2.55309: P 3069531324:3069531944(620) ack 225051666 win 65463
+     0.000072000 10.0.0.11.3381 > 10.0.0.12.445: S 1378088462:1378088462(0) win 16384
+     0.000083000 10.0.0.13.1653 > 10.0.0.1.6699: P 3272208349:3272208357(8) ack 501563814 win 32767
+     0.000093000 10.0.0.14.1320 > 10.0.0.15.445: S 3127123478:3127123478(0) win 64170
+     0.000095000 10.0.0.4.14401 > 10.0.0.3.80: R 810547499:810547499(0) ack 457330478 win 34932
+
+    Note that this output is similar to what tcpdump with options "-n" and
+    "-S" would have produced. The only missing fields are related to the TCP
+    options negotiated during connection setup. Unfortunately, TSH records
+    include only the first 16 bytes of the TCP header, making it impossible
+    to record the options from the segment header.
+
     NUMBER specifies the capacity of the monitored link in bits per second
     (b/s). If not specified, it defaults to 155,520,000.
 
-    If called in a list context process_trace() gathers the same statistics
-    and in addition it extracts all TCP flows and TCP data-carrying segments
-    from the trace, returning two hash references. For example
+   Context matters
+    When called in a list context process_trace() in addition to collecting
+    summary statistics, it extracts all TCP flows and TCP data-carrying
+    segments from the trace, returning two hash references. For example,
 
      my ($senders_href, $segments_href) = process_trace 'trace.tsh';
 
@@ -352,7 +417,7 @@ FUNCTIONS
     defined and is currently set to 3. Trace processing is aborted if the
     number of records with the same timestamp exceeds this threshold. If you
     encounter such traces, it is not a bad idea to investigate why this is
-    happening. It may be that the trace is corrupted.
+    happening, as the trace may be corrupted.
 
     The second returned value, *$segments_href*, is another hash reference,
     which can be used to access any individual *data-carrying TCP segment*
@@ -361,7 +426,7 @@ FUNCTIONS
     (including IP and TCP headers, and application payload), the segment
     sequence number, and whether the segment was retransmitted or not.
 
-    For example, assuming the the first record corresponds to a TCP segment,
+    For example, assuming the first record corresponds to a TCP segment,
     here is how you can print its packet size and the sequence number
     carried in the TCP header:
 
@@ -386,41 +451,16 @@ FUNCTIONS
     determined that the segment was retransmitted.
 
     CAVEAT: write_sojourn_times() is not currently included in the stable,
-    CPAN version of the module. Contact me if you want to to get the most
-    recent version.
-
-    If TEXT_FILENAME is specified, process_trace() generates a text file
-    based on the trace records in a format similar to the modified output of
-    tcpdump, as presented in *TCP/IP Illustrated Volume 1* by W. R. Stevens
-    (see pp. 230-231).
-
-    You can use such an output as input to other tools, present real traffic
-    scenarios in a classroom, or simply "eyeball" the trace. For example,
-    here are the first ten lines of the contents of such a file:
-
-     0.000000000 10.0.0.1.6699 > 10.0.0.2.55309: . ack 225051666 win 65463
-     0.000014000 10.0.0.3.80 > 10.0.0.4.14401: S 457330477:457330477(0) ack 810547499 win 34932
-     0.000014000 10.0.0.1.6699 > 10.0.0.2.55309: . 3069529864:3069531324(1460) ack 225051666 win 65463
-     0.000024000 10.0.0.5.12119 > 10.0.0.6.80: F 2073668891:2073668891(0) ack 183269290 win 64240
-     0.000034000 10.0.0.7.4725 > 10.0.0.8.445: S 3152140131:3152140131(0) win 16384
-     0.000067000 10.0.0.1.6699 > 10.0.0.2.55309: P 3069531324:3069531944(620) ack 225051666 win 65463
-     0.000072000 10.0.0.11.3381 > 10.0.0.12.445: S 1378088462:1378088462(0) win 16384
-     0.000083000 10.0.0.13.1653 > 10.0.0.1.6699: P 3272208349:3272208357(8) ack 501563814 win 32767
-     0.000093000 10.0.0.14.1320 > 10.0.0.15.445: S 3127123478:3127123478(0) win 64170
-     0.000095000 10.0.0.4.14401 > 10.0.0.3.80: R 810547499:810547499(0) ack 457330478 win 34932
-
-    Note that the text output is similar to what tcpdump with options "-n"
-    and "-S" would have produced. The only missing fields are related to the
-    TCP options negotiated during connection setup. Unfortunately, TSH
-    records include only the first 16 bytes of the TCP header, making it
-    impossible to record the options from the segment header.
+    CPAN version of the module. Contact me if you want to get a copy of the
+    bleeding edge version.
 
   records_in
      records_in FILENAME
 
-    Estimates the number to records in FILENAME based on its file size and
-    returns the "expected" number of records in the trace, which must an
-    integer. If not an integer, records_in() returns *false*.
+    Estimates the number to records in FILENAME based on its file size. It
+    returns an integer corresponding to the "expected" number of records in
+    the trace, or *false* if the file size does not seem to correspond to a
+    legitimate TSH trace.
 
   verbose
      verbose
@@ -430,18 +470,18 @@ FUNCTIONS
     to see trace processing progress indicators on standard error.
 
   write_interface_summaries
-     write_interface_summaries FILE_PREFIX
      write_interface_summaries
+     write_interface_summaries FILE_PREFIX
 
     Writes a CSV summary similar to what write_trace_summary() generates for
     each interface in the trace (see %Interfaces). Each summary file has a
     ".if-X.csv" suffix, where X is the number of the interface. If
-    FILE_PREFIX is provided write_interface_summaries() will append to it
+    FILE_PREFIX is provided, write_interface_summaries() will append to it
     this standard suffix (indicative of the interface).
 
   write_trace_summary
-     write_trace_summary FILENAME
      write_trace_summary
+     write_trace_summary FILENAME
 
     Writes the contents of %Trace to FILENAME in comma separated values
     (CSV) format, a platform independent text format, excellent for storing
@@ -464,7 +504,7 @@ EXPORTS
     None by default.
 
   Exportable
-    date_of() get_IP_address() get_interfaces_href()
+    date_of() get_IP_address() get_interfaces_href() get_interfaces_list()
     get_trace_summary_href() numerically() process_trace() records_in()
     verbose() write_trace_summary()
 
@@ -482,7 +522,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.11.
+    This is "Net::Traces::TSH" version 0.12.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at
@@ -495,6 +535,10 @@ SEE ALSO
     http://pma.nlanr.net/Traces . The site contains a variety of traces
     gathered from several monitoring points at university campuses and
     (Giga)PoPs connected to a variety of large and small networks.
+
+    "Net::Traces::TSH" version 0.11 was presented in YAPC::NA 2004. The
+    presentation slides are available at
+    http://www.cs.sunysb.edu/~kostas/art/yapc
 
   DiffServ
     If you are not familiar with Differentiated Services (DiffServ), good

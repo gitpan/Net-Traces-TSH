@@ -11,10 +11,11 @@ BEGIN {
     plan tests => 7;
   }
  };
-use Net::Traces::TSH 0.10 qw(
+use Net::Traces::TSH 0.12 qw(
 	                      process_trace
                               write_interface_summaries
                               get_interfaces_href
+                              get_interfaces_list
                             );
 ok(1);
 
@@ -42,5 +43,3 @@ unless ( $^O =~ m/MSWin/ ) {
     unlink("t/sample_input/sample.tsh.if-$_.csv");
   }
 }
-
-

@@ -1,5 +1,12 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.12 Sat Aug 21 2004
+   - Code updates and minor fixes.  Use autouse for Carp.
+   - POD updates and editorial changes.
+   - Added get_interfaces_list().
+   - Updated documentation/sample-summary.pod
+   - Additional tests released.
+
 0.11 Sun Jun 13 2004
    - Application tsh2tcpdump.pl 0.01 released. 
 
@@ -56,7 +63,7 @@ Revision history for Perl extension Net::Traces::TSH.
      make most of them redundant.  If the platform has diff, it is
      used as well (31st test).
    - Added t/sample.csv.
-   - Added documentation/sample-summary.pod, and annotated version of
+   - Added documentation/sample-summary.pod, an annotated version of
      t/sample.csv.
    - Additional tests released.
 

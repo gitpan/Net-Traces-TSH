@@ -1,18 +1,19 @@
 # Test correct operation of Net::Traces::TSH process_trace()
 #
 use strict;
+use warnings;
 use Test;
 
 BEGIN {
   if ( $^O =~ m/MSWin/ ) {
-    plan tests => 61
+    plan tests => 63
   }
   else {
-    plan tests => 63
+    plan tests => 65
   }
 };
 
-use Net::Traces::TSH 0.10 qw(
+use Net::Traces::TSH 0.12 qw(
                               process_trace
                               get_trace_summary_href
                               get_interfaces_href
@@ -30,6 +31,23 @@ ok($trace_href->{filename}, 't/sample_input/sample.tsh');
 
 ok($trace_href->{IP}{'Total Packets'}, 1000);
 ok($trace_href->{IP}{'Total Bytes'}, 356_422);
+
+ok($trace_href->{IP}{'Total Packets'} =
+     $trace_href->{Transport}{ICMP}{'Total Packets'}
+   + $trace_href->{Transport}{TCP}{'Total Packets'}
+   + $trace_href->{Transport}{UDP}{'Total Packets'}
+   + $trace_href->{Transport}{Unknown}{'Total Packets'}
+  );
+
+# Similar as above, without hard-coding the transport protocols
+#
+my $total_transport_bytes = 0;
+
+foreach ( keys %{ $trace_href->{Transport} } ) {
+  $total_transport_bytes += $trace_href->{Transport}{$_}{'Total Bytes'}
+}
+
+ok($trace_href->{IP}{'Total Bytes'} == $total_transport_bytes);
 
 ok($trace_href->{Transport}{TCP}{'Total Packets'}, 842);
 ok($trace_href->{Transport}{TCP}{'Total ACKs'}, 576);
@@ -82,7 +100,7 @@ ok($trace_href->{2}{Transport}{ICMP}{'Packet Size'}{56}, 3);
 ok($trace_href->{2}{IP}{'Packet Size'}{139}, 1);
 ok($trace_href->{2}{Transport}{TCP}{'Packet Size'}{728}, 19);
 
-process_trace 't/sample_input/sample.tsh', undef, 't/local.tcpdump';
+process_trace 't/sample_input/sample.tsh','t/local.tcpdump';
 ok(1);
 
 $trace_href = get_trace_summary_href;

@@ -11,7 +11,7 @@ BEGIN {
     plan tests => 6
   }
 };
-use Net::Traces::TSH 0.10 qw( process_trace write_trace_summary);
+use Net::Traces::TSH 0.12 qw( process_trace write_trace_summary);
 ok(1);
 
 process_trace 't/sample_input/sample.tsh';

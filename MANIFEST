@@ -7,6 +7,7 @@ TSH.pm
 t/core.t
 t/date_of.t
 t/get_IP_address.t
+t/get_interfaces_list.t
 t/process_trace.t
 t/records_in.t
 t/write_interface_summaries.t
