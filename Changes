@@ -1,5 +1,24 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.15 Mon Oct 4 2004
+   - TCP segments with header lengths smaller than 20 bytes are no
+     longer included in the tally for 'Total ACKs'.  In general,
+     it may be interesting to count the number of TCP segments with
+     header lengths smaller than the required minimum (20 bytes).
+     However, in a recent study I noticed that out of 22,592,477,487
+     segments with the ACK bit set, only 158 had a header smaller than
+     20 bytes.  It is not clear whether these segments belonged to
+     protocols masquerading as TCP, or if they where erroneous
+     TCP segments.  Anyhow, by now ignoring such segments, the
+     following holds always:
+
+               Total ACK = Cumulative ACKs + Options ACKs
+
+   - Minor code modifications and cleanup
+   - Distribution cleanup based on suggestions from "Writing Perl
+     Modules for CPAN" by Sam Tregar (Apress 2002)
+   - POD updates and editorial changes
+
 0.14 Tue Aug 31 2004
    - Data structure %Trace and %Interface refactoring
    - converters/tsh2ns2.pl ver. 0.01 released
@@ -30,7 +49,7 @@ Revision history for Perl extension Net::Traces::TSH.
    - Code reorganization and simplification
    - Added get_interfaces_href() and write_interface_summaries(). One
      can now get statistics on per-interface basis in a way similar to
-     get_trace_summary_href()  and write_trace_summary(), respectively.
+     get_trace_summary_href()  and write_trace_summary(), respectively
    - Added write_summary(), an internal, non-exportable utility function.
    - Additional tests released
 
@@ -41,7 +60,7 @@ Revision history for Perl extension Net::Traces::TSH.
    - Renamed %Trace_Summary to %Trace
    - Updated __DATA__ section with the latest IANA Protocol Numbers
      published (May 12, 2004); allowed for more multi-word protocol
-     names.
+     names
 
 0.08 Tue May 4 2004
    - Code simplifications in date_of() and process_trace()
@@ -56,7 +75,7 @@ Revision history for Perl extension Net::Traces::TSH.
      does not work correctly, I decided to skip context diffs between
      the distribution-bundled sample output files (t/sample.csv and
      t/sample.tcpdump) and the locally generated ones on MSWin
-     platforms for now, and continue searching for an alternative.
+     platforms for now, and continue searching for an alternative
 
 0.06 Sat Apr 17 2004
    - Distribution fix: The tarball comes with sample output files
@@ -105,4 +124,4 @@ Revision history for Perl extension Net::Traces::TSH.
    - POD editorial changes
 
 0.01 Mon Mar  1 2004
-   - original public release
+   - Original public release

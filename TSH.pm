@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use autouse 'Carp' => qw(carp croak confess);
 
-our $VERSION = 0.14;
+our $VERSION = 0.15;
 
 =head1 NAME
 
@@ -1213,22 +1213,24 @@ sub process_trace( $ ) {
       # Count the number of ACKs, pure ACKs, etc.
       #
       if ( $ack ) {
-	$Interfaces{$if}{Transport}{TCP}{'Total ACKs'}++;
-
-	if ( $tcp_hl == 20 ) {
-	  $Interfaces{$if}{Transport}{TCP}{'Cumulative ACKs'}++;
-
-	  $Interfaces{$if}{Transport}{TCP}{'Pure ACKs'}++
-	    if $tcp_payload == 0;
-	}
-	elsif ( $tcp_hl > 20 ) {
-	  $Interfaces{$if}{Transport}{TCP}{'Options ACKs'}++;
-	  $Interfaces{$if}{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
-	}
-	else {
+	if ( $tcp_hl < 20 ) {
 	  # Yet another extremely unlikely event, but just in case...
 	  #
-	  carp "TCP header with only $tcp_hl bytes detected";
+	  carp "TCP header with only $tcp_hl bytes detected and ignored";
+	}
+	else {
+	  $Interfaces{$if}{Transport}{TCP}{'Total ACKs'}++;
+
+	  if ( $tcp_hl == 20 ) {
+	    $Interfaces{$if}{Transport}{TCP}{'Cumulative ACKs'}++;
+
+	    $Interfaces{$if}{Transport}{TCP}{'Pure ACKs'}++
+	      if $tcp_payload == 0;
+	  }
+	  else {
+	    $Interfaces{$if}{Transport}{TCP}{'Options ACKs'}++;
+	    $Interfaces{$if}{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
+	  }
 	}
       }
 
@@ -1576,29 +1578,35 @@ INTERFACE_INFO
     print $FH
       "\n\nIP STATISTICS (", uc($metric),
       ")\n,,Fragmentation,,Explicit Congestion Notification,,",
-      "Differentiated Services,,,,IP Options\n,";
-
-    print $FH join( ',', @data_points), "\nIP";
+      "Differentiated Services,,,,IP Options\n,",
+      join( ',', @data_points), "\nIP";
 
     foreach ( @data_points ) {
-      print_value(\*$FH, $href->{IP}{$_}{$metric});
+      print $FH ',',
+	defined $href->{IP}{$_}{$metric} ? $href->{IP}{$_}{$metric}
+	                                 : 0;
     }
 
     foreach my $protocol ( @transports ) {
       print $FH "\n$protocol";
       foreach ( @data_points ) {
-	print_value( \*$FH,
-	       $href->{Transport}{$protocol}{$_}{$metric} );
+	print $FH ',',
+	  defined $href->{Transport}{$protocol}{$_}{$metric}
+	    ? $href->{Transport}{$protocol}{$_}{$metric}
+	    : 0;
       }
     }
   }
 
   # Print distribution of ACKs
   #
-  if ( $href->{Transport}{TCP}{'Total ACKs'}) {
-    print $FH "\n\nTCP ACKNOWLEDGEMENTS";
+  if ( $href->{Transport}{TCP}{'Total ACKs'} ) {
+    print $FH "\n\nTCP ACKNOWLEDGEMENTS\n";
+
     foreach ( 'Total ACKs', 'Cumulative ACKs', 'Pure ACKs', 'Options ACKs' ) {
-      print $FH "\n$_,$href->{Transport}{TCP}{$_}";
+      print $FH "$_,",
+	defined $href->{Transport}{TCP}{$_} ? $href->{Transport}{TCP}{$_}
+                                            : 0, "\n";
     }
   }
 
@@ -1606,7 +1614,7 @@ INTERFACE_INFO
   #
   if ( $href->{Transport}{TCP}{rwnd} ) {
     print $FH
-      "\n\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
+      "\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
 
     # Some of the entries in the hash are naturally uninitialized. For
     # example, for a given advertised window size, we may had SYN(s)
@@ -1772,11 +1780,11 @@ sub print_value(*$) {
 
 Nothing non-standard: L<strict>, L<warnings> and L<Carp>.
 
-=head1 EXPORTS
+=head2 EXPORTS
 
 None by default.
 
-=head2 Exportable
+=head3 Exportable
 
 configure() date_of() get_IP_address() get_interfaces_href()
 get_interfaces_list() get_trace_summary_href() numerically()
@@ -1803,7 +1811,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.14.
+This is C<Net::Traces::TSH> version 0.15.
 
 =head1 SEE ALSO
 
@@ -1849,11 +1857,11 @@ http://www.ietf.org/rfc/rfc3168.txt
 
 C<Net::Traces::TSH> can convert TSH traces to binary files suitable to
 drive simulations in ns2. More information about ns2 is available at
-http://www.isi.edu/nsnam/ns/
+http://www.isi.edu/nsnam/ns .
 
 =head1 AUTHOR
 
-Kostas Pentikousis, kostas@cpan.org.
+Kostas Pentikousis, kostas AT cpan DOT org.
 
 =head1 ACKNOWLEDGMENTS
 

@@ -627,10 +627,10 @@ FUNCTIONS
 DEPENDENCIES
     Nothing non-standard: strict, warnings and Carp.
 
-EXPORTS
+  EXPORTS
     None by default.
 
-  Exportable
+   Exportable
     configure() date_of() get_IP_address() get_interfaces_href()
     get_interfaces_list() get_trace_summary_href() numerically()
     process_trace() records_in() verbose() write_trace_summary()
@@ -649,7 +649,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.14.
+    This is "Net::Traces::TSH" version 0.15.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at
@@ -691,10 +691,10 @@ SEE ALSO
   The ns2 network simulator
     "Net::Traces::TSH" can convert TSH traces to binary files suitable to
     drive simulations in ns2. More information about ns2 is available at
-    http://www.isi.edu/nsnam/ns/
+    http://www.isi.edu/nsnam/ns .
 
 AUTHOR
-    Kostas Pentikousis, kostas@cpan.org.
+    Kostas Pentikousis, kostas AT cpan DOT org.
 
 ACKNOWLEDGMENTS
     Professor Hussein Badr provided invaluable guidance while crafting the
