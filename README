@@ -17,28 +17,22 @@ SYNOPSIS
       #
       write_trace_summary 'some_trace.csv';
 
-ABSTRACT
-    Net::Traces::TSH provides methods to analyze IP packet traces in Time
-    Sequenced Headers (TSH) format. Trace summary statistics are stored in
-    comma separated values (CSV), a platform independent text format. Use
-    Net::Traces::TSH to gather general information about a TSH packet trace,
-    measure Transport protocol, DiffServ and ECN usage, and generate packet
-    and segment size distributions. In addition, you can extract all TCP
-    traffic present in a TSH trace in a tcpdump-like text format.
-
 INSTALLATION
-    To install "Net::Traces::TSH" type the following:
+    "Net::Traces::TSH" can be installed like any CPAN module. My preferred
+    way is using Andreas Koenig's CPAN module. To find out more about
+    installing CPAN modules type
+
+     perldoc perlmodinstall
+
+    at the command prompt.
+
+    If you have downloaded the "Net::Traces::TSH" tarball, you can install
+    it as follows:
 
      perl Makefile.PL
      make
      make test
      make install
-
-    Moreover,
-
-     perldoc perlmodinstall
-
-    provides more information and options about installing Perl modules.
 
 DESCRIPTION
     With "Net::Traces::TSH" you can analyze IP packet traces in Time
@@ -443,7 +437,7 @@ EXPORTS
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.06.
+    This is "Net::Traces::TSH" version 0.07.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at

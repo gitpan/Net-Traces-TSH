@@ -3,8 +3,8 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 31 };
-use Net::Traces::TSH 0.06 qw( process_trace get_trace_summary_href);
+BEGIN { plan tests => 31};
+use Net::Traces::TSH 0.07 qw( process_trace get_trace_summary_href);
 ok(1);
 
 process_trace 't/sample.tsh';
@@ -50,10 +50,21 @@ ok($trace_href->{Transport}{ICMP}{'DF Bytes'}, 336);
 ok($trace_href->{Transport}{Unknown}{'Total Bytes'}, 216);
 ok($trace_href->{Transport}{Unknown}{'Total Packets'}, 3);
 
-eval { system('diff', 't/sample.tcpdump', 't/sample.tcpdump'); };
+if ( $^O =~ m/MSWin/ ) {
+  skip "Skipping context diff between distribution ", "";
+  skip "t/sample.tcpdump and locally generated t/local.tcpdump", "";
+}
+else {
+  my $diff_avail = 0;
 
-skip ( $@,
-       ok(system('diff', 't/local.tcpdump', 't/sample.tcpdump'), 0) );
+  eval {
+    $diff_avail = system('diff', 't/sample.tcpdump', 't/sample.tcpdump');
+  };
+
+  skip ( $diff_avail >> 8, 
+         ok(system('diff', 't/local.tcpdump', 't/sample.tcpdump'), 0)
+       );
+}
 
 unlink('t/local.tcpdump');
 ok(1);

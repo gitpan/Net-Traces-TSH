@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 0.06;
+our $VERSION = 0.07;
 
 =head1 NAME
 
@@ -104,31 +104,23 @@ use constant TIMESTAMP_COLLISION_THRESHOLD => 3;
 #
 my $Verbose = 0;
 
-=head1 ABSTRACT
-
-Net::Traces::TSH provides methods to analyze IP packet traces in Time
-Sequenced Headers (TSH) format. Trace summary statistics are stored in
-comma separated values (CSV), a platform independent text format. Use
-Net::Traces::TSH to gather general information about a TSH packet
-trace, measure Transport protocol, DiffServ and ECN usage, and
-generate packet and segment size distributions. In addition, you can
-extract all TCP traffic present in a TSH trace in a tcpdump-like text
-format.
-
 =head1 INSTALLATION
 
-To install C<Net::Traces::TSH> type the following:
+C<Net::Traces::TSH> can be installed like any CPAN module.  My
+preferred way is using Andreas Koenig's CPAN module.  To find out more
+about installing CPAN modules type
+
+ perldoc perlmodinstall
+
+at the command prompt.
+
+If you have downloaded the C<Net::Traces::TSH> tarball, you can install
+it as follows:
 
  perl Makefile.PL
  make
  make test
  make install
-
-Moreover,
-
- perldoc perlmodinstall
-
-provides more information and options about installing Perl modules.
 
 =head1 DESCRIPTION
 
@@ -1430,7 +1422,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.06.
+This is C<Net::Traces::TSH> version 0.07.
 
 =head1 SEE ALSO
 
