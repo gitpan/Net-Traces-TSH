@@ -1,5 +1,8 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.16 Wed Nov 17 2004
+   - Minor code modifications and cleanup
+
 0.15 Mon Oct 4 2004
    - TCP segments with header lengths smaller than 20 bytes are no
      longer included in the tally for 'Total ACKs'.  In general,
@@ -10,9 +13,9 @@ Revision history for Perl extension Net::Traces::TSH.
      20 bytes.  It is not clear whether these segments belonged to
      protocols masquerading as TCP, or if they where erroneous
      TCP segments.  Anyhow, by now ignoring such segments, the
-     following holds always:
+     following equation is always true:
 
-               Total ACK = Cumulative ACKs + Options ACKs
+               Total ACKs = Cumulative ACKs + Options ACKs
 
    - Minor code modifications and cleanup
    - Distribution cleanup based on suggestions from "Writing Perl

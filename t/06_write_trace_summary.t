@@ -34,6 +34,6 @@ unless ( $^O =~ m/MSWin/ ) {
        );
 }
 
-unlink('t/sample_input/sample.tsh.csv');
+#unlink('t/sample_input/sample.tsh.csv');
 ok(1);
 

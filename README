@@ -649,7 +649,7 @@ DEPENDENCIES
      use Net::Traces::TSH qw(:all);
 
 VERSION
-    This is "Net::Traces::TSH" version 0.15.
+    This is "Net::Traces::TSH" version 0.16.
 
 SEE ALSO
     The NLANR MOAT Passive Measurement and Analysis (PMA) web site at

@@ -11,7 +11,7 @@ BEGIN {
     plan tests => 7;
   }
  };
-use Net::Traces::TSH 0.14 qw(
+use Net::Traces::TSH 0.16 qw(
 	                      process_trace
                               write_interface_summaries
                               get_interfaces_href
@@ -40,6 +40,6 @@ unless ( $^O =~ m/MSWin/ ) {
                        "t/sample_input/sample.tsh.if-$_.csv",
                        "t/sample_output/sample.if-$_.csv"), 0 )
          );
-    unlink("t/sample_input/sample.tsh.if-$_.csv");
   }
+  #unlink(<t/sample_input/sample.tsh.if-*.csv>);
 }

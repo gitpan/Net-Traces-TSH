@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use autouse 'Carp' => qw(carp croak confess);
 
-our $VERSION = 0.15;
+our $VERSION = 0.16;
 
 =head1 NAME
 
@@ -1194,16 +1194,17 @@ sub process_trace( $ ) {
 	# payload in the trace.
 	#
 	$Interfaces{$if}{Transport}{TCP}{SYN}{$tcp_hl}++;
-	$Interfaces{$if}{Transport}{TCP}{'SYN/ACK'}{$tcp_hl}++ if $ack;
-	$Interfaces{$if}{Transport}{TCP}{'SYN/Payload'}++ if $tcp_payload > 0;
+	$Interfaces{$if}{Transport}{TCP}{'SYN/ACK'}{$tcp_hl}++
+	  if $ack;
+	$Interfaces{$if}{Transport}{TCP}{'SYN/Payload'}++
+	  if $tcp_payload > 0;
 
 	# Collect the receiver's advertised window (awnd), for all
 	# SYNs that have the standard TCP header.  We will refer to
 	# that as the "hard count".  For larger SYNs, we cannot say
 	# for sure what is the receiver's advertised window, but we
-	# can collect a count for comparison (rwnd).  We call this a
-	# "soft count".  Practice has shown that the soft count is
-	# always greater.
+	# can collect a count for comparison (rwnd).  We will refer to
+	# this as the "soft count".
 	#
 	$Interfaces{$if}{Transport}{TCP}{rwnd}{$win}++;
 	$Interfaces{$if}{Transport}{TCP}{awnd}{$win}++
@@ -1529,7 +1530,7 @@ GENERAL TRACE INFORMATION
 Filename,$Trace{filename},$Trace{date}
 Duration,$Trace{ends}
 Records,$Trace{records}
-Number of Interfaces,$Trace{interfaces}
+Interfaces,$Trace{interfaces}
 GENERAL_INFO
 
   print $FH "Link Capacity,$Trace{'Link Capacity'}\n"
@@ -1581,19 +1582,28 @@ INTERFACE_INFO
       "Differentiated Services,,,,IP Options\n,",
       join( ',', @data_points), "\nIP";
 
+    # Some of the entries in the hashes below are naturally
+    # uninitialized.  For example, a given trace may not have any
+    # packets the MF bit set.  We take advantage of Perl's automatic
+    # conversion of uninitialized values to 0 (in a scalar/number
+    # context).  However, with warnings on, this may cause a
+    # considerable number warnings re: uninitialized values possibly
+    # leading a novice user to believe that something REALLY BAD
+    # happened, which is not the case.  So we disable these particular
+    # warnings for the rest of the block.  This "practice is followed
+    # in the rest of the code below, as necessary.
+    #
+    no warnings qw(uninitialized);
+
     foreach ( @data_points ) {
-      print $FH ',',
-	defined $href->{IP}{$_}{$metric} ? $href->{IP}{$_}{$metric}
-	                                 : 0;
+      printf $FH ",%d", $href->{IP}{$_}{$metric};
     }
 
     foreach my $protocol ( @transports ) {
       print $FH "\n$protocol";
+
       foreach ( @data_points ) {
-	print $FH ',',
-	  defined $href->{Transport}{$protocol}{$_}{$metric}
-	    ? $href->{Transport}{$protocol}{$_}{$metric}
-	    : 0;
+	printf $FH ",%d", $href->{Transport}{$protocol}{$_}{$metric};
       }
     }
   }
@@ -1604,9 +1614,7 @@ INTERFACE_INFO
     print $FH "\n\nTCP ACKNOWLEDGEMENTS\n";
 
     foreach ( 'Total ACKs', 'Cumulative ACKs', 'Pure ACKs', 'Options ACKs' ) {
-      print $FH "$_,",
-	defined $href->{Transport}{TCP}{$_} ? $href->{Transport}{TCP}{$_}
-                                            : 0, "\n";
+      printf $FH "$_,%d\n", $href->{Transport}{TCP}{$_};
     }
   }
 
@@ -1614,24 +1622,17 @@ INTERFACE_INFO
   #
   if ( $href->{Transport}{TCP}{rwnd} ) {
     print $FH
-      "\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
+      "\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count\n";
 
-    # Some of the entries in the hash are naturally uninitialized. For
-    # example, for a given advertised window size, we may had SYN(s)
-    # with options (soft count), but no SYN(s) without options (hard
-    # count). We take advantage of Perl's automatic conversion of
-    # uninitialized values to an empty string (""). However, with
-    # warnings on, this may lead the novice user that something REALLY
-    # BAD happened, which is not the case. So disable these particular
-    # warnings for the rest of the block.
-    #
     no warnings qw(uninitialized);
 
     foreach ( sort numerically keys %{$href->{Transport}{TCP}{rwnd}} ) {
-      print $FH "\n$_,",
-	$href->{Transport}{TCP}{rwnd}{$_}
-	  - $href->{Transport}{TCP}{awnd}{$_}, ',',
-	$href->{Transport}{TCP}{awnd}{$_};
+      printf $FH "%d,%d,%d\n", $_,
+
+                               $href->{Transport}{TCP}{rwnd}{$_}
+                               - $href->{Transport}{TCP}{awnd}{$_},
+
+                               $href->{Transport}{TCP}{awnd}{$_};
     }
   }
 
@@ -1639,7 +1640,7 @@ INTERFACE_INFO
   #
   if ( $href->{Transport}{TCP}{SYN} ) {
     print $FH
-      "\n\nTCP OPTIONS NEGOTIATION\n",
+      "\nTCP OPTIONS NEGOTIATION\n",
       'TCP Header Length (Bytes),SYN,SYN/ACK';
 
     no warnings qw(uninitialized);
@@ -1680,7 +1681,7 @@ INTERFACE_INFO
       }
     }
 
-  print $FH "\n\n";
+  print $FH "\n";
 }
 
 =head2 write_interface_summaries
@@ -1811,7 +1812,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.15.
+This is C<Net::Traces::TSH> version 0.16.
 
 =head1 SEE ALSO
 

@@ -2,7 +2,7 @@ GENERAL TRACE INFORMATION
 Filename,t/sample_input/sample.tsh,Unknown
 Duration,0.937457
 Records,1000
-Number of Interfaces,2
+Interfaces,2
 
 
 IP STATISTICS (PACKETS)
@@ -200,4 +200,3 @@ Bytes,IP,ICMP,TCP,UDP,Unknown
 1480,6,0,6,0,0
 1492,2,0,2,0,0
 1500,34,0,34,0,0
-

@@ -2,7 +2,7 @@ GENERAL TRACE INFORMATION
 Filename,t/sample_input/sample.tsh,Unknown
 Duration,0.937457
 Records,1000
-Number of Interfaces,2
+Interfaces,2
 
 INTERFACE INFORMATION
 Interface Number,2
@@ -38,10 +38,10 @@ Options ACKs,21
 
 RECEIVER ADVERTISED WINDOW
 Size (Bytes),Soft Count,Hard Count
-24616,3,
-24820,5,
-49640,1,
-64240,1,
+24616,3,0
+24820,5,0
+49640,1,0
+64240,1,0
 
 TCP OPTIONS NEGOTIATION
 TCP Header Length (Bytes),SYN,SYN/ACK
@@ -117,4 +117,3 @@ Bytes,IP,ICMP,TCP,UDP
 1480,6,0,6,0
 1492,2,0,2,0
 1500,32,0,32,0
-
