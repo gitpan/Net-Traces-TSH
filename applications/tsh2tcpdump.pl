@@ -2,14 +2,14 @@
 use strict;
 use warnings;
 use Getopt::Std;
-use Net::Traces::TSH 0.13 qw( configure process_trace);
+use Net::Traces::TSH 0.14 qw( configure process_trace);
 
 our $opt_v;
 getopts('v');
 
 my $trace = shift;
 
-die "Usage: perl tshpt.pl [-v] TRACE [TCPDUMP_FILENAME]\n"
+die "Usage: perl tsh2tcpdump.pl [-v] TRACE [TCPDUMP_FILENAME]\n"
   unless $trace;
 
 my $tcpdump = shift || "$trace.tcpdump";
@@ -17,7 +17,9 @@ my $tcpdump = shift || "$trace.tcpdump";
 if ($opt_v) {
   configure(Verbosity => 1, tcpdump => $tcpdump);
 
-  print STDERR "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
+  print STDERR <<INFO;
+Converting $trace to tcpdump format (Net::Traces::TSH version $Net::Traces::TSH::VERSION)...
+INFO
 }
 else {
   configure(tcpdump => $tcpdump);
@@ -33,11 +35,11 @@ tsh2tcpdump.pl - Convert a single TSH trace to tcpdump text format
 
 =head1 SYNOPSIS
 
- perl pt.pl [-v] TRACE [TCPDUMP_FILENAME]
+ perl tsh2tcpdump.pl [-v] TRACE [TCPDUMP_FILENAME]
 
 =head1 DESCRIPTION
 
-C<tsh2tcpdumppt.pl> is a simple application based on
+C<tsh2tcpdump.pl> is a simple application based on
 L<Net::Traces::TSH|Net::Traces::TSH>: It converts the binary TSH
 F<TRACE> to tcpdump text format, stored in F<TCPDUMP_FILENAME>.  If
 F<TCPDUMP_FILENAME> is ommited, C<tsh2tcpdump> will store the result

@@ -9,7 +9,7 @@ ok(1);
 
 # Default link capacity value
 #
-ok($Net::Traces::TSH::options{'Link Capacity'} == 155_520_000);
+ok($Net::Traces::TSH::options{'Link Capacity'} == 0);
 
 configure('Link Capacity' => 100_000_000);
 

@@ -3,7 +3,6 @@ Filename,t/sample_input/sample.tsh,Unknown
 Duration,0.937457
 Records,1000
 Number of Interfaces,2
-Link Capacity,155520000
 
 INTERFACE INFORMATION
 Interface Number,1
@@ -17,7 +16,7 @@ TCP Total,596,234,1117338
 
 IP STATISTICS (PACKETS)
 ,,Fragmentation,,Explicit Congestion Notification,,Differentiated Services,,,,IP Options
-,Total ,DF ,MF ,ECT ,CE ,Normal ,Class Selector ,AF PHB ,EF PHB ,No IP Options ,IP Options 
+,Total,DF,MF,ECT,CE,Normal,Class Selector,AF PHB,EF PHB,No IP Options,IP Options
 IP,673,581,0,0,0,673,0,0,0,673,0
 ICMP,19,6,0,0,0,19,0,0,0,19,0
 TCP,559,547,0,0,0,559,0,0,0,559,0
@@ -26,7 +25,7 @@ Unknown,3,0,0,0,0,3,0,0,0,3,0
 
 IP STATISTICS (BYTES)
 ,,Fragmentation,,Explicit Congestion Notification,,Differentiated Services,,,,IP Options
-,Total ,DF ,MF ,ECT ,CE ,Normal ,Class Selector ,AF PHB ,EF PHB ,No IP Options ,IP Options 
+,Total,DF,MF,ECT,CE,Normal,Class Selector,AF PHB,EF PHB,No IP Options,IP Options
 IP,155059,140513,0,0,0,155059,0,0,0,155059,0
 ICMP,1532,336,0,0,0,1532,0,0,0,1532,0
 TCP,130932,130332,0,0,0,130932,0,0,0,130932,0

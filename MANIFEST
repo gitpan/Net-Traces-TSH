@@ -17,10 +17,11 @@ t/sample_input/sample.tsh
 t/sample_output/sample.csv
 t/sample_output/sample.if-1.csv
 t/sample_output/sample.if-2.csv
+t/sample_output/sample.if-1.bin
+t/sample_output/sample.if-2.bin
 t/sample_output/sample.tcpdump
-t/sample_output/sample.tsh-if1.bin
-t/sample_output/sample.tsh-if2.bin
 documentation/sample-summary.pod
 applications/pt.pl
 applications/tsh2tcpdump.pl
+converters/tsh2ns2.pl
 

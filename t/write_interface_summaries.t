@@ -11,7 +11,7 @@ BEGIN {
     plan tests => 7;
   }
  };
-use Net::Traces::TSH 0.13 qw(
+use Net::Traces::TSH 0.14 qw(
 	                      process_trace
                               write_interface_summaries
                               get_interfaces_href
