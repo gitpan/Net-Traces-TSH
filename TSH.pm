@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 =head1 NAME
 
@@ -15,16 +15,16 @@ Net::Traces::TSH - Analyze IP traffic traces in TSH format
 
   use Net::Traces::TSH qw(:traffic_analysis);
 
-  # Enable progress information display
+  # Display progress indicators
   #
   verbose;
 
-  # process the trace in file some_trace.tsh
+  # Process the trace in file some_trace.tsh
   #
   process_trace 'some_trace.tsh';
 
   # Then, write a summary of the trace contents to some_trace.csv, in
-  # Comma-Separated Values (CSV) format
+  # comma-separated values (CSV) format
   #
   write_trace_summary 'some_trace.csv';
 
@@ -59,7 +59,7 @@ our %EXPORT_TAGS = (
 		    all => [@EXPORT_OK],
 		   );
 
-# Load the IANA protocol numbers from the __DATA__ section. If by any
+# Load the IANA protocol numbers from the __DATA__ section.  If by any
 # chance we end up having duplicate keywords, something must have have
 # corrupted the __DATA__ section, so abort.
 #
@@ -86,7 +86,7 @@ sub verbose();
 sub write_trace_summary( ; $ );
 
 # Used to sort the keys of a hash in numeric order instead of the
-# default alphabetical order. Borrowed from "Programming Perl 3/e" by
+# default alphabetical order.  Borrowed from "Programming Perl 3/e" by
 # Wall, Christiansen and Orwant (p. 790).
 #
 sub numerically { $a <=> $b; }
@@ -106,29 +106,33 @@ my $Verbose = 0;
 
 =head1 INSTALLATION
 
-C<Net::Traces::TSH> can be installed like any CPAN module.  My
-preferred way is using Andreas Koenig's CPAN module.  To find out more
-about installing CPAN modules type
+C<Net::Traces::TSH> can be installed like any CPAN module.  In
+particular, consider using Andreas Koenig's CPAN module for all your
+CPAN module installation needs.
 
- perldoc perlmodinstall
-
-at the command prompt.
-
-If you have downloaded the C<Net::Traces::TSH> tarball, you can install
-it as follows:
+If you have downloaded the C<Net::Traces::TSH> tarball, decompress and
+untar it, and proceed as follows:
 
  perl Makefile.PL
  make
  make test
  make install
 
+To find out more about installing CPAN modules type
+
+ perldoc perlmodinstall
+
+at the command prompt.
+
+
 =head1 DESCRIPTION
 
-With C<Net::Traces::TSH> you can analyze IP packet traces in Time
-Sequenced Headers (TSH), a binary network trace format. Each 44-byte
-TSH record corresponds to an IP packet passing by a monitoring
-point. Although there are no explicit section delimiters, each record
-is composed of three rather distinct sections.
+With C<Net::Traces::TSH> you can analyze Internet Protocol (IP) packet
+traces in time sequenced headers (TSH), a binary network trace format.
+Daily TSH traces are available from the L<NLANR PMA web site|"SEE
+ALSO">.  Each 44-byte TSH record corresponds to an IP packet passing
+by a monitoring point.  Although there are no explicit section
+delimiters, each record is composed of three rather distinct sections.
 
 =over
 
@@ -140,22 +144,23 @@ recorded by the (passive) monitor.
 
 =item IP
 
-The next 20 bytes contain the standard IP packet header. IP options
+The next 20 bytes contain the standard IP packet header.  IP options
 are not recorded.
 
 =item TCP
 
 The third and last section contains the first 16 bytes of the standard
-TCP segment header. The TCP checksum, urgent pointer, and TCP options
+TCP segment header.  The TCP checksum, urgent pointer, and TCP options
 (if any) are not included in a TSH record.
 
 =back
 
 If a record does not correspond to a TCP segment, it is not clear how
-to interpret the last section. As such, C<Net::Traces::TSH> makes no
-assumptions, and does not analyze in detail packets from protocols
-other than TCP. That is, C<Net::Traces::TSH> reports on protocols
-other than TCP based on the second section (IP header) only.
+to interpret the last section.  As such, C<Net::Traces::TSH> makes no
+assumptions, and does not analyze the last section of a TSH record
+unless it corresponds to a TCP segment.  In other words,
+C<Net::Traces::TSH> reports on protocols other than TCP based solely
+on the first two sections.
 
 The following diagram illustrates a TSH record.
 
@@ -187,38 +192,39 @@ The following diagram illustrates a TSH record.
     |       |       |R|E|G|K|H|T|N|N|                               |
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-This diagram is a modified version of the original TSH diagram (found
-on the L<NLANR PMA web site|"SEE ALSO">), which reflects the changes
-due to the addition of Explicit Congestion Notification (ECN) in the
-TCP header flags. Keep in mind that recent RFCs have modified the
-meaning of the IP header Type of Service field to accommodate
-L<Differentiated Services and Explicit Congestion Notification|"SEE
-ALSO">.
+This diagram is an adaptation of the original TSH diagram (found on
+the L<NLANR PMA web site|"SEE ALSO">), which reflects the changes due
+to the addition of Explicit Congestion Notification (ECN) in the TCP
+header flags.  Keep in mind that recent Internet Engineering Task
+Force (IETF) Requests for Comments (RFCs) have deprecated the IP
+header Type of Service field in favor of L<Differentiated Services and
+Explicit Congestion Notification|"SEE ALSO">.
 
 For example, you can use C<Net::Traces::TSH> to L<gather
 information|"process_trace"> from a TSH packet trace, perform
-statistical analysis on Transport protocol, DiffServ and ECN usage,
-and obtain packet and segment size distributions. The trace L<summary
-statistics|"write_trace_summary"> are stored in comma separated values
-(CSV), a platform independent text format.
+statistical analysis on Transport protocol, Differentiated Services
+(DiffServ) and ECN usage, and obtain packet and segment size
+distributions.  The trace L<summary statistics|"write_trace_summary">
+are stored in comma separated values (CSV), a platform independent
+text format.
 
 =head2 Data Structures
 
 The data collected from a trace is stored is a hash called
-%Trace_Summary, the main data structure in
-C<Net::Traces::TSH>. %Trace_Summary is initialized and populated by
-L<process_trace|"process_trace">. The recommended way to get the trace
-summary information is by calling
+%Trace_Summary, the main data structure in C<Net::Traces::TSH>.
+%Trace_Summary is initialized and populated by
+L<process_trace|"process_trace">.  The recommended way to get the
+trace summary information is by calling
 L<write_trace_summary|"write_trace_summary">, which stores the
 contents of %Trace_Summary in a CSV-formated text file, as shown in
 L<SYNOPSIS|"SYNOPSIS">.
 
-%Trace_Summary is not exported by default and it is not intended to be
-accessed directly by user code. However, if you know what you are
+%Trace_Summary is not exported by default and was not designed to be
+accessed directly by user code.  However, if you know what you are
 doing, you can get a reference to %Trace_Summary by calling
-L<get_trace_summary_href|"get_trace_summary_href">. If you choose to
+L<get_trace_summary_href|"get_trace_summary_href">.  If you choose to
 do so, the following subsections explain how you can access some of
-the information stored in %Trace_Summary. See also L<Taking advantage
+the information stored in %Trace_Summary.  See also L<Taking advantage
 of %Trace_Summary|"Taking advantage of %Trace_Summary">.
 
 =head3 General Trace Information
@@ -235,11 +241,12 @@ The trace L<summary FILENAME|"write_trace_summary">.
 
 =item $Trace_Summary{starts}
 
-The first trace timestamp, in seconds.
+The first trace timestamp, in seconds, as it is recorded in the trace.
 
 =item $Trace_Summary{ends}
 
-The last trace timestamp, in seconds.
+The last trace timestamp, in seconds, after being normalized.
+Essentially, the number of seconds since $Trace_Summary{starts}.
 
 =item $Trace_Summary{records}
 
@@ -268,8 +275,9 @@ second (b/s).
 
 =item $Trace_Summary{IP}{'Total Bytes'}
 
-Number of IP packets and bytes, respectively, in the trace. The number
-of IP packets should equal the number of records in the trace.
+Number of IP packets and bytes, respectively, in the trace.  The
+number of IP packets should be equal to the number of records in the
+trace.
 
 =back
 
@@ -299,10 +307,10 @@ Fragments' follow.
 
 =item $Trace_Summary{IP}{'Normal Packets'}
 
-=item $Trace_Summary{IP}{ 'Normal Bytes'}
+=item $Trace_Summary{IP}{'Normal Bytes'}
 
 Number of IP packets and bytes, respectively, requesting no particular
-treatment (best effort traffic). None of the DiffServ and ECN bits are
+treatment (best effort traffic).  None of the DiffServ and ECN bits are
 set.
 
 =item $Trace_Summary{IP}{'Class Selector Packets'}
@@ -337,15 +345,15 @@ Forwarding Per-Hop Behavior (PHB)
 =item $Trace_Summary{IP}{'ECT Bytes'}
 
 Number of IP packets and bytes, respectively, with either of the ECT
-bits set. These packets carry ECN-capable traffic.
+bits set.  These packets should be carrying ECN-aware traffic.
 
 =item $Trace_Summary{IP}{'CE Packets'}
 
 =item $Trace_Summary{IP}{'CE Bytes'}
 
-Number of IP packets and bytes, respectively, with the CE bit
-set. There packets carry ECN-capable traffic that has been marked at
-an ECN-aware router.
+Number of IP packets and bytes, respectively, with the CE bit set.
+These packets carry ECN-capable traffic that has been marked at an
+ECN-aware router.
 
 =back
 
@@ -356,7 +364,7 @@ about IP, %Trace_Summary maintains information about the transport
 protocols present in the trace.  Based on the IP header,
 %Trace_Summary maintains the same statistics mentioned in the
 L<previous section|"Internet Protocol"> for TCP, UDP and other
-transport protocols with an IANA assigned number. For example,
+transport protocols with an IANA assigned number.  For example,
 
 =over
 
@@ -371,7 +379,7 @@ and TCP headers) in the trace.
 
 =item $Trace_Summary{Transport}{UDP}{'Total Bytes'}
 
-Ditto for UDP.
+Ditto, for UDP.
 
 =item $Trace_Summary{Transport}{ICMP}{'DF Packets'}
 
@@ -411,14 +419,14 @@ traffic in the trace.
 
 =cut
 
-# Internal hash array that holds statistical information about the
-# trace under.
+# Hash array that holds statistical information about the trace we are
+# currently processing.
 #
 my %Trace_Summary;
 
 =head1 FUNCTIONS
 
-C<Net::Traces::TSH> does not export any functions by default. The
+C<Net::Traces::TSH> does not export any functions by default.  The
 following functions, listed in alphabetical order, are
 L<exportable|"EXPORTS">.
 
@@ -427,10 +435,10 @@ L<exportable|"EXPORTS">.
   date_of FILENAME
 
 Converts the epoch timestamp, typically part of a TSH trace FILENAME
-downloaded from http://pma.nlanr.net/Traces to a human readable
-date. If FILENAME contains a valid timestamp, date_of() returns the
-corresponding GMT date as a string. Otherwise, it returns an empty
-string, i.e. I<false>.
+downloaded from http://pma.nlanr.net/Traces to a human readable date.
+If the FILENAME contains a valid timestamp, date_of() returns the
+corresponding GMT date as a human readable string.  Otherwise, it
+returns I<false>.
 
 For example,
 
@@ -441,8 +449,7 @@ returns C<Sat Jan  3 12:15:15 2004 GMT>.
 =cut
 
 sub date_of( $ ) {
-  $_ = shift;
-  $_ and /(\d{10})/ and return join ' ', scalar gmtime $1, "GMT";
+  $_ = shift and /(\d{10})/ and return join ' ', scalar gmtime $1, 'GMT';
 }
 
 =head2  get_IP_address
@@ -469,7 +476,9 @@ Returns a hash I<reference> to L<%Trace_Summary|"Data Structures">.
 
 =cut
 
-sub get_trace_summary_href() { return \%Trace_Summary }
+sub get_trace_summary_href() {
+  return \%Trace_Summary;
+}
 
 =head2 process_trace
 
@@ -487,44 +496,51 @@ to 155,520,000.
 
 If called in a list context process_trace() gathers the same
 statistics and in addition it extracts all TCP flows and TCP
-data-carrying segments from the trace, returning two hash
-references. For example
+data-carrying segments from the trace, returning two hash references.
+For example
 
- my ($senders_href, $packets_href) = process_trace 'trace.tsh';
+ my ($senders_href, $segments_href) = process_trace 'trace.tsh';
 
-Here I<$senders_href> is a reference to a hash which contains an entry
-for each TCP sender in the trace file. Each hash entry is a list of
-timestamps extracted from the trace record and stored after being
-"normalized" (start of trace = 0.0 seconds, always). In theory, all
-records should have different timestamps. In practice, although it is
-not very likely that two data segments have the same timestamp, I
-encountered a few traces that did have duplicate
-timestamps. process_trace() checks for such cases and implements a
-hash collision avoidance algorithm. If the collision threshold of
-trace records with the same timestamp is exceeded, process_trace()
-aborts as this is a hint that the trace is corrupted. The collision
-threshold is currently set to 4.
+will process C<trace.tsh> and return two hash references:
+I<$senders_href> and I<$segments_href>.
 
-A TCP sender is identified by the ordered 4-tuple
+I<$senders_href> is a reference to a hash which contains an entry for
+each TCP sender in the trace file.  A TCP sender is identified by the
+ordered 4-tuple
 
  (src, src port, dst, dst port)
 
 where I<src> and I<dst> are the L<32-bit integers|"get_IP_address">
 corresponding to the IP addresses of the sending and receiving hosts,
-respectively. Similarly, I<src port> and I<dst port> are the sending
-and receiving processes port numbers. Senders are categorized on a per
-interface basis. For example, the following accesses the list of
-segments sent from 10.0.0.12:80 to 10.0.0.14:1080 (in interface 1):
+respectively.  Similarly, I<src port> and I<dst port> are the sending
+and receiving processes' port numbers.  Senders are categorized on a
+per interface basis.  For example, the following accesses the list of
+segments sent from 10.0.0.12:80 to 10.0.0.14:1080 (on interface 1):
 
  $senders_href->{1}{167772172,80,167772174,1080}
 
-The second returned value, I<$packets_href>, is another hash
-reference, which can be used to access any individual data-carrying
-TCP segment in the trace. Again, packets are categorized on a per
-interface basis. Three values are stored per packet: the total number
-of bytes in the packet (including IP and TCP headers, and application
-payload), the segment sequence number, and whether the segment was
-retransmitted or not.
+Each hash entry is a list of timestamps extracted from the trace
+records and stored after being "normalized" (start of trace = 0.0
+seconds, always).
+
+In theory, records corresponding to packets transmitted on the same
+interface should have different timestamps.  In practice, although it
+is not very likely that two data segments have the same timestamp, I
+encountered a few traces that did have duplicate timestamps.
+process_trace() checks for such cases and implements a timestamp
+"collision avoidance" algorithm.  A timestamp collision threshold is
+defined and is currently set to 3.  Trace processing is aborted if the
+number of records with the same timestamp exceeds this threshold.  If
+you encounter such traces, it is not a bad idea to investigate why
+this is happening.  It may be that the trace is corrupted.
+
+The second returned value, I<$segments_href>, is another hash
+reference, which can be used to access any individual I<data-carrying
+TCP segment> in the trace. Again, segments are categorized on a per
+interface basis. Three values are stored per segment: the total number
+of bytes (including IP and TCP headers, and application payload), the
+segment sequence number, and whether the segment was retransmitted or
+not.
 
 For example, assuming the the first record corresponds to a TCP
 segment, here is how you can print its packet size and the sequence
@@ -533,35 +549,34 @@ number carried in the TCP header:
  my $interface = 1;
  my $timestamp = 0.0;
 
- print $packets_href->{$interface}{$timestamp}{bytes};
- print $packets_href->{$interface}{$timestamp}{seq_num};
+ print $segments_href->{$interface}{$timestamp}{bytes};
+ print $segments_href->{$interface}{$timestamp}{seq_num};
 
-You can also check whether a packet was retransmitted or not:
+You can also check whether a segment was retransmitted or not:
 
- if ( packets_href->{$interface}{$timestamp}{retransmitted} ) {
-   print "Packet was retransmitted by the TCP sender.";
+ if ( segments_href->{$interface}{$timestamp}{retransmitted} ) {
+   print "Segment was retransmitted by the TCP sender.";
  }
  else {
-   print "Packet must have been acknowledged by the TCP receiver.";
+   print "Segment must have been acknowledged by the TCP receiver.";
  }
 
-Please note that process_trace() only initializes the "retransmitted"
-value to false (0). It is write_sojourn_times() that detects
-retransmitted segments and updates the "retransmitted" entry to
-I<true>, if it is determined that the segment was retransmitted.
+Note that process_trace() only initializes the "retransmitted" value
+to false (0).  It is write_sojourn_times() that detects retransmitted
+segments and updates the "retransmitted" entry to I<true>, if it is
+determined that the segment was retransmitted.
 
-CAVEAT: write_sojourn_times() has not been finalized yet, and as such
-it is not included in this version. L<Contact me|"AUTHOR"> if you want
-to to get the most recent version.
+CAVEAT: write_sojourn_times() is not currently included in the stable,
+CPAN version of the module.  L<Contact me|"AUTHOR"> if you want to to
+get the most recent version.
 
 If TEXT_FILENAME is specified, process_trace() generates a text file
 based on the trace records in a format similar to the modified output
 of F<tcpdump>, as presented in I<TCP/IP Illustrated Volume 1> by
-W. R. Stevens. The format is explained in more detail in I<TCP/IP
-Illustrated Volume 1>, pp. 230-231.
+W. R. Stevens (see pp. 230-231).
 
 You can use such an output as input to other tools, present real
-traffic scenarios in a classroom, or simply "eyeball" the trace. For
+traffic scenarios in a classroom, or simply "eyeball" the trace.  For
 example, here are the first ten lines of the contents of such a file:
 
  0.000000000 10.0.0.1.6699 > 10.0.0.2.55309: . ack 225051666 win 65463
@@ -576,11 +591,11 @@ example, here are the first ten lines of the contents of such a file:
  0.000095000 10.0.0.4.14401 > 10.0.0.3.80: R 810547499:810547499(0) ack 457330478 win 34932
 
 Note that the text output is similar to what F<tcpdump> with options
-C<-n> and C<-S> would have produced. The only missing field is the TCP
-options negotiated during connection setup. Unfortunately, L<TSH
-records|"DESCRIPTION"> include only the first 16 bytes of the TCP
-header, making it impossible to record the options from the segment
-header.
+C<-n> and C<-S> would have produced. The only missing fields are
+related to the TCP options negotiated during connection setup.
+Unfortunately, L<TSH records|"DESCRIPTION"> include only the first 16
+bytes of the TCP header, making it impossible to record the options
+from the segment header.
 
 =cut
 
@@ -593,10 +608,10 @@ sub process_trace( $ ; $$ ) {
   # Open trace file
   #
   $Trace_Summary{filename} = shift
-    or croak "No trace filename provided";
+    or croak 'No trace filename provided';
 
   open(INPUT, '<', $Trace_Summary{filename})
-    or croak "Cannot open $Trace_Summary{filename} for processing";
+    or croak "Cannot open $Trace_Summary{filename} for processing. $!";
 
   binmode INPUT; # Needed for non-UNIX OSes; no harm in UNIX
 
@@ -604,8 +619,8 @@ sub process_trace( $ ; $$ ) {
   #
   $Trace_Summary{records} = records_in $Trace_Summary{filename}
     or croak
-      "\n\'", $Trace_Summary{filename}, "\' may be corrupted: ",
-      "Number of records not an integer. Trace processing aborted";
+      "\n\'$Trace_Summary{filename}\' may be corrupted: ",
+      'Number of records is not an integer. Trace processing aborted';
 
   $Trace_Summary{'Link Capacity'} = shift || 155_520_000;
 
@@ -613,28 +628,30 @@ sub process_trace( $ ; $$ ) {
 
   $text_trace_filename and
     ( open(TCPDUMP, '>', $text_trace_filename)
-      or croak "\n$0 could not open $text_trace_filename: $!" );
+      or croak "Cannot open $text_trace_filename. $!" );
 
   print STDERR "Processing $Trace_Summary{filename}...\n"
     if $Verbose;
 
   # Determine if we should collect statistics about the %senders and
-  # the %packets. If process_trace() was called in a void context then
-  # we need not collect such data, which can result in tremendous
-  # memory usage savings.
+  # the %segments.  If process_trace() was called in a void context
+  # then we do not need to collect such data, which results in
+  # tremendous memory usage savings.
   #
-  my $want_senders_packets = defined wantarray ? 1 : 0;
+  my $want_senders_segments = defined wantarray ? 1 : 0;
 
   # If process_trace() is called in a void context, we will not
   # examine traffic direction, thus undef
-  # $Trace_Summary{unidirectional}. Otherwise, assume that
-  # traffic is unidirectional, until proven otherwise.
+  # $Trace_Summary{unidirectional}.  Otherwise, assume that traffic is
+  # unidirectional, until proven otherwise.
   #
-  $want_senders_packets ? $Trace_Summary{unidirectional} = 1
-                        : undef $Trace_Summary{unidirectional};
+  $want_senders_segments ? $Trace_Summary{unidirectional} = 1
+                         : undef $Trace_Summary{unidirectional};
 
-  my (%senders, %packets);
+  my (%senders, %segments);
 
+  # Timestamp of the last processed record.
+  #
   $Trace_Summary{ends} = 0;
 
   # Read the trace file, record by record
@@ -687,11 +704,11 @@ sub process_trace( $ ; $$ ) {
 
     # Sanity check
     #
-    croak "Microseconds record field exceeds 1,000,000. Processing aborted"
+    croak 'Microseconds record field exceeds 1,000,000. Processing aborted'
       unless $t_usec < 1;
 
     # Get the first timestamp in the trace, and use it to normalize
-    # the the rest of the timestamps in the trace.
+    # the rest of the timestamps in the trace.
     #
     $Trace_Summary{starts} = $t_sec + $t_usec
       unless defined $Trace_Summary{starts};
@@ -701,24 +718,28 @@ sub process_trace( $ ; $$ ) {
     #
     my $timestamp = $t_sec + $t_usec - $Trace_Summary{starts};
 
+    # Convert the $protocol number to the corresponding protocol name
+    #
+    $protocol = $iana_protocol_numbers{oct "0b$protocol"} || 'Unknown';
+
     # Sanity check: Timestamps must increase monotonically in a TSH
     # trace.
     #
-    # Monotonically, that is. Not *strictly* monotonically. The TSH
+    # Monotonically, that is. Not *strictly* monotonically.  The TSH
     # microsecond resolution is theoretically sufficient to capture
     # ATM cells on an OC3 line with distinct timestamps since an ATM
-    # cell needs approximately 2.7263 usec to be transmitted. In
-    # practice, though, it is possible to have packets recorded with
-    # the same timestamp. However, we should never go back in time.
+    # cell needs approximately 2.7263 usec to be transmitted.  In
+    # practice, though, it is possible to have segments recorded with
+    # the same timestamp.  However, we should never go back in time.
     #
     if ($Trace_Summary{ends} > $timestamp) {
       # If this is a TCP segment then this can play a big role if we
       # are interested in extracting the segment time series, so it's
       # better that we abort processing.
       #
-      warn "Timestamps do not increase monotonically\n";
+      warn "Timestamps do not increase monotonically (Prot $protocol)\n";
 
-      $want_senders_packets
+      $want_senders_segments
 	and croak "Processing aborted for $Trace_Summary{filename}";
     }
 
@@ -733,10 +754,10 @@ sub process_trace( $ ; $$ ) {
     #
     my $version = ($version_ihl & 0xf0) >> 4;
 
-    # We shouldn't see anything other than IPv4. If we do, issue a
+    # We shouldn't see anything other than IPv4.  If we do, issue a
     # warning.
     #
-    warn "IPv$version packet detected\n" unless $version == 4;
+    carp 'IPv$version packet detected' unless $version == 4;
 
     # Get the IP Header Length (IHL)
     #
@@ -745,13 +766,6 @@ sub process_trace( $ ; $$ ) {
     ##################################################################
     #                      Transport protocols
     ##################################################################
-    # Convert $protocol number to protocol name
-    #
-    $protocol = oct "0b$protocol";
-    $protocol = $iana_protocol_numbers{$protocol}
-      ? $iana_protocol_numbers{$protocol}
-      : 'Unknown';
-
     $Trace_Summary{Transport}{$protocol}{'Total Packets'}++;
     $Trace_Summary{Transport}{$protocol}{'Total Bytes'} += $ip_len;
     $Trace_Summary{Transport}{$protocol}{'Packet Size'}{$ip_len}++;
@@ -862,9 +876,9 @@ sub process_trace( $ ; $$ ) {
       $Trace_Summary{Transport}{$protocol}{'IP Options Bytes'} += $ip_len;
     }
     else {
-      # This is an extremely unlikely event, but just in case
+      # This is an extremely unlikely event, but just in case...
       #
-      warn "IP header with only $ihl bytes detected\n";
+      carp 'IP header with only $ihl bytes detected';
     }
 
     ##################################################################
@@ -892,12 +906,12 @@ sub process_trace( $ ; $$ ) {
 	  if $tcp_payload > 0;
 
 	# Collect the receiver's advertised window (awnd), for all
-	# SYNs that have the standard TCP header. We will refer to
-	# that as the "hard count". For larger SYNs, we cannot say for
-	# sure what is the receiver's advertised window, but we can
-	# collect a count for comparison (rwnd). We call this a "soft
-	# count". Practice has shown that the soft count is always
-	# greater.
+	# SYNs that have the standard TCP header.  We will refer to
+	# that as the "hard count".  For larger SYNs, we cannot say
+	# for sure what is the receiver's advertised window, but we
+	# can collect a count for comparison (rwnd).  We call this a
+	# "soft count".  Practice has shown that the soft count is
+	# always greater.
 	#
 	$Trace_Summary{Transport}{TCP}{rwnd}{$win}++;
 	$Trace_Summary{Transport}{TCP}{awnd}{$win}++
@@ -920,33 +934,33 @@ sub process_trace( $ ; $$ ) {
 	  $Trace_Summary{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
 	}
 	else {
-	  # This is another extremely unlikely event, but just in case
+	  # Yet another extremely unlikely event, but just in case...
 	  #
-	  warn "TCP header with only $tcp_hl bytes detected\n";
+	  carp 'TCP header with only $tcp_hl bytes detected';
 	}
       }
 
       # Optional export of trace data in hashes
       #
-      if ( $want_senders_packets and $tcp_payload > 0 ) {
+      if ( $want_senders_segments and $tcp_payload > 0 ) {
 	# Add elements to the hashes ONLY if the segment carries some
-	# payload. This way, one can be more sure if a given segment
+	# payload.  This way, one can be more sure if a given segment
 	# was retransmitted or not, since ACKs are not guaranteed
 	# reliable delivery.
 	#
 	# Occasionally, we may get 2 or more TCP segments with the
-	# same $timestamp. We would like to keep them in the packets
+	# same $timestamp.  We would like to keep them in the segments
 	# hash and be able to discriminate between the different
-	# packets, so we use the following (hash) collision avoidance
+	# segments, so we use the following (hash) collision avoidance
 	# mechanism.
 	#
 	my $collisions = 0;
 
-	while ( exists $packets{$interface}{$timestamp}{bytes} ) {
+	while ( exists $segments{$interface}{$timestamp}{bytes} ) {
 	  # Sanity check: If more than TIMESTAMP_COLLISION_THRESHOLD
 	  # trace records have the same timestamp, it is better to
-	  # abort processing. Theoretically there shouldn't be two
-	  # packets with the same timestamp.
+	  # abort processing.  Theoretically there shouldn't be two
+	  # segments with the same timestamp.
 	  #
 	  croak 'Too many duplicate timestamps: ', $collisions,
 	    ' trace records have the same timestamp. Processing aborted'
@@ -960,24 +974,24 @@ sub process_trace( $ ; $$ ) {
 	# Store the total length of the segment (headers + application
 	# payload), and the sequence number it carries
 	#
-	$packets{$interface}{$timestamp}{bytes} = $ip_len;
-	$packets{$interface}{$timestamp}{seq_num} = $seq_num;
+	$segments{$interface}{$timestamp}{bytes} = $ip_len;
+	$segments{$interface}{$timestamp}{seq_num} = $seq_num;
 
 	# In addition, flag by default every segment as an original
-	# transmission. Detection of retransmitted packets is not done
-	# in process_trace(), but rather in write_sojourn_times()
+	# transmission.  Detection of retransmitted segments is not
+	# done in process_trace(), but rather in write_sojourn_times()
 	#
-	$packets{$interface}{$timestamp}{retransmitted} = 0;
+	$segments{$interface}{$timestamp}{retransmitted} = 0;
 
 	# Add the packet to the respective sender list
 	#
 	push @{ $senders{$interface}{"$src,$src_port,$dst,$dst_port"} },
-	  $timestamp;
+	     $timestamp;
 
-	# Flag bidirectional traffic found in the *same* interface. If
-	# bidirectional traffic is present in the same interface, it
-	# is not clear (yet) how to isolate "incoming" from "outgoing"
-	# traffic.
+	# Flag bidirectional traffic found in the *same* interface.
+	# If bidirectional traffic is present in the same interface,
+	# it is not clear (yet) how to isolate "incoming" from
+	# "outgoing" traffic.
 	#
 	$Trace_Summary{unidirectional} = 0
 	  if ( $Trace_Summary{unidirectional} and
@@ -985,6 +999,9 @@ sub process_trace( $ ; $$ ) {
 	     );
       }
 
+      ##################################################################
+      #                Export TSH to tcpdump format
+      ##################################################################
       # Print a tcpdump-like time line of the TSH trace (for TCP
       # segments only)
       #
@@ -1030,7 +1047,7 @@ sub process_trace( $ ; $$ ) {
   carp $Trace_Summary{Transport}{TCP}{'Concurrent Segments'},
     ' TCP segments had the same timestamp with another segment'
   if $Trace_Summary{Transport}{TCP}{'Concurrent Segments'}
-     and $want_senders_packets;
+     and $want_senders_segments;
 
   # Sanity check
   #
@@ -1042,16 +1059,16 @@ sub process_trace( $ ; $$ ) {
   croak "Total number of packets does not match total number of trace records"
     unless $Trace_Summary{records} == $total_packets;
 
-  return (\%senders, \%packets) if $want_senders_packets;
+  return (\%senders, \%segments) if $want_senders_segments;
 }
 
 =head2 records_in
 
  records_in FILENAME
 
-Estimates the number to records in FILENAME and returns the "expected"
-number of records in the trace, which must an integer. If not an
-integer, records_in() returns I<false>.
+Estimates the number to records in FILENAME based on its file size and
+returns the "expected" number of records in the trace, which must an
+integer.  If not an integer, records_in() returns I<false>.
 
 =cut
 
@@ -1067,7 +1084,7 @@ sub records_in( $ ) {
  verbose
 
 As you might expect, this function sets the verbosity level of the
-module.  By default C<Net::Traces::TSH> remains "silent". Call
+module.  By default C<Net::Traces::TSH> remains "silent".  Call
 verbose() to see trace processing progress indicators on standard
 error.
 
@@ -1084,10 +1101,10 @@ sub verbose () {
 
 Writes the contents of L<%Trace_Summary|"Data Structures"> to FILENAME
 in comma separated values (CSV) format, a platform independent text
-format, excellent for storing tabular data. CSV is both human-readable
-and suitable for further analysis using Perl or direct import to a
-spreadsheet application. Although not required, it is recommended that
-FILENAME should have a I<.csv> suffix.
+format, excellent for storing tabular data.  CSV is both
+human-readable and suitable for further analysis using Perl or direct
+import to a spreadsheet application.  Although not required, it is
+recommended that FILENAME should have a I<.csv> suffix.
 
 If FILENAME is not specified, write_trace_summary() will create one
 for you by appending the suffix I<.csv> to the L<filename|"General
@@ -1129,7 +1146,7 @@ Duration,$Trace_Summary{ends}
 Records,$Trace_Summary{records}
 GENERAL_INFO
 
-  print LOG "Duplicate timestamps,",
+  print LOG 'Duplicate timestamps,',
     $Trace_Summary{Transport}{TCP}{'Concurrent Segments'}, "\n"
   if $Trace_Summary{Transport}{TCP}{'Concurrent Segments'};
 
@@ -1265,7 +1282,7 @@ PERIODS
       "Differentiated Services,,,,IP Options\n,";
 
     # Make sure that all data points are accounted and are in correct
-    # order. Using an array with predetermined data points we are
+    # order.  Using an array with predetermined data points we are
     # collecting prevents the "silly presentation bug", where if a
     # protocol does not have any packets with the DF bit set but does
     # have some packets with the Class Selector bits set, a loop based
@@ -1311,7 +1328,7 @@ PERIODS
       "\n\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
 
     # Some of the entries in the hash are naturally uninitialized. For
-    # example, for a given advertized window size, we may had SYN(s)
+    # example, for a given advertised window size, we may had SYN(s)
     # with options (soft count), but no SYN(s) without options (hard
     # count). We take advantage of Perl's automatic conversion of
     # uninitialized values to an empty string (""). However, with
@@ -1391,7 +1408,7 @@ sub print_value(*$) {
 
 =head1 DEPENDENCIES
 
-L<Carp>
+Nothing non-standard: L<strict>, L<warnings> and L<Carp>.
 
 =head1 EXPORTS
 
@@ -1402,7 +1419,7 @@ None by default.
 date_of() get_IP_address() get_trace_summary_href() numerically()
 process_trace() records_in() verbose() write_trace_summary()
 
-In addition, the following export tags are defined
+In addition, the following export tags are defined:
 
 =over
 
@@ -1422,20 +1439,20 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.07.
+This is C<Net::Traces::TSH> version 0.08.
 
 =head1 SEE ALSO
 
 The NLANR MOAT Passive Measurement and Analysis (PMA) web site at
 http://pma.nlanr.net/PMA provides more details on the process of
-collecting packet traces. The site features a set of Perl programs you
-can download, including several converters from other packet trace
+collecting packet traces.  The site features a set of Perl programs
+you can download, including several converters from other packet trace
 formats to TSH.
 
 TSH trace files can be downloaded from the NLANR/PMA trace repository
-at http://pma.nlanr.net/Traces . The site contains a variety of traces
-gathered from several monitoring points at university campuses and
-(Giga)PoPs connected to a variety of large and small networks.
+at http://pma.nlanr.net/Traces .  The site contains a variety of
+traces gathered from several monitoring points at university campuses
+and (Giga)PoPs connected to a variety of large and small networks.
 
 =head2 DiffServ
 
@@ -1470,13 +1487,13 @@ Professor Hussein Badr provided invaluable guidance while crafting the
 main algorithms of this module.
 
 Many thanks to Wall, Christiansen and Orwant for writing I<Programming
-Perl 3/e>. It has been indispensable while developing this module.
+Perl 3/e>.  It has been indispensable while developing this module.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2003, 2004 by Kostas Pentikousis. All Rights Reserved.
+Copyright 2003, 2004 by Kostas Pentikousis.  All Rights Reserved.
 
-This library is free software with ABSOLUTELY NO WARRANTY. You can
+This library is free software with ABSOLUTELY NO WARRANTY.  You can
 redistribute it and/or modify it under the same terms as Perl itself.
 
 =cut

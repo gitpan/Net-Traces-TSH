@@ -4,7 +4,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 6 };
-use Net::Traces::TSH 0.07 qw( process_trace write_trace_summary);
+use Net::Traces::TSH 0.08 qw( process_trace write_trace_summary);
 ok(1);
 
 process_trace 't/sample.tsh';

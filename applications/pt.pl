@@ -4,21 +4,18 @@ use warnings;
 use Getopt::Std;
 use Net::Traces::TSH qw( :traffic_analysis );
 
-my $VERSION = 0.03;
-
 our $opt_v;
 getopts('v');
 
 if ($opt_v) {
   verbose;
 
-  print "\npt.pl ", $VERSION, ' (Net::Traces::TSH version ',
-    $Net::Traces::TSH::VERSION, ")\n\n";
+  print "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
 }
 
 my $trace = shift;
 
-die "pt.pl: missing TRACE\nUsage: perl pt.pl [-v] TRACE\n"
+die "No TRACE to process.\nUsage: perl pt.pl [-v] TRACE\n"
   unless $trace;
 
 process_trace $trace;

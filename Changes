@@ -1,5 +1,10 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.08 Tue May 4 2004
+   - Code simplifications in date_of() and process_trace().
+   - POD updates and editorial changes.
+   - Additional tests released.
+
 0.07 Sun Apr 25 2004
    - Same code as in 0.06, with minor editorial POD changes.
    - Distribution fix: CPAN testers reported that ver. 0.07 fails to
@@ -30,31 +35,31 @@ Revision history for Perl extension Net::Traces::TSH.
      assurance that the code works correctly, but a context diff would
      make most of them redundant.  If the platform has diff, it is
      used as well (31st test).
-   - Added t/sample.csv
+   - Added t/sample.csv.
    - Added documentation/sample-summary.pod, and annotated version of
-     t/sample.csv
-   - Additional tests released
+     t/sample.csv.
+   - Additional tests released.
 
 0.05 Wed Mar 31 2004
-   - Distribution fixes: META.yml, t/sample.tcpdump
+   - Distribution fixes: META.yml, t/sample.tcpdump.
 
 0.04 Tue Mar 30 2004
-   - Minor updates in the process_trace()/tcpdump text generation
-   - Code and POD updates
-   - Added t/sample.tcpdump
-   - Added META.yml
-   - Additional tests released
+   - Minor updates in the process_trace()/tcpdump text generation.
+   - Code and POD updates.
+   - Added t/sample.tcpdump.
+   - Added META.yml.
+   - Additional tests released.
 
 0.03 Sat Mar 20 2004
-   - Code and POD updates 
-   - pt.pl 0.03 released
-   - Added t/sample.tsh trace
-   - Additional tests released 
+   - Code and POD updates.
+   - pt.pl 0.03 released.
+   - Added t/sample.tsh trace.
+   - Additional tests released. 
 
 0.02 Wed Mar 10 2004
-   - Application pt.pl 0.01 released
-   - Additional tests released
-   - POD editorial changes
+   - Application pt.pl 0.01 released.
+   - Additional tests released.
+   - POD editorial changes.
 
 0.01 Mon Mar  1 2004
-   - original public release
+   - original public release.
