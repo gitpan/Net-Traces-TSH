@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 =head1 NAME
 
@@ -1361,6 +1361,8 @@ PERIODS
   if ( $Trace_Summary{Transport}{TCP}{'Options ACKs'}) {
     print LOG "\n\nTCP OPTIONS ACK USAGE\nTCP Header Length (Bytes),Count";
 
+    no warnings qw(uninitialized);
+
     foreach (sort keys %{$Trace_Summary{Transport}{TCP}{'ACK Option Size'}}) {
       print LOG "\n$_,", $Trace_Summary{Transport}{TCP}{'ACK Option Size'}{$_};
     }
@@ -1428,7 +1430,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.05.
+This is C<Net::Traces::TSH> version 0.06.
 
 =head1 SEE ALSO
 
