@@ -1,5 +1,14 @@
 Revision history for Perl extension Net::Traces::TSH.
 
+0.09 Mon Jun 7 2004
+   - Provide summary statistics on a per-interface basis in addition
+     to the aggregate statistics. (POD to be added.)
+   - POD editorial changes.
+   - Renamed %Trace_Summary to %Trace.
+   - Updated __DATA__ section with the latest IANA Protocol Numbers
+     published (May 12, 2004); allowed for more multi-word protocol
+     names.
+
 0.08 Tue May 4 2004
    - Code simplifications in date_of() and process_trace().
    - POD updates and editorial changes.

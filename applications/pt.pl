@@ -10,7 +10,7 @@ getopts('v');
 if ($opt_v) {
   verbose;
 
-  print "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
+  print STDERR "Using Net::Traces::TSH version $Net::Traces::TSH::VERSION\n";
 }
 
 my $trace = shift;

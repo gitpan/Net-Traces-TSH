@@ -4,7 +4,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 31};
-use Net::Traces::TSH 0.08 qw( process_trace get_trace_summary_href);
+use Net::Traces::TSH 0.09 qw( process_trace get_trace_summary_href);
 ok(1);
 
 process_trace 't/sample.tsh';

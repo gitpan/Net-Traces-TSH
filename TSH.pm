@@ -4,8 +4,8 @@ use 5.6.1;
 use strict;
 use warnings;
 use Carp;
-
-our $VERSION = 0.08;
+use Data::Dumper;
+our $VERSION = 0.09;
 
 =head1 NAME
 
@@ -67,7 +67,8 @@ my %iana_protocol_numbers;
 
 INIT {
   while (<DATA>) {
-    my ($k, $v) = split;
+    chomp;
+    my ($k, $v) = split " ", $_, 2;
     die "Duplicate IANA protocol keyword detected"
       if defined $iana_protocol_numbers{$k};
     $iana_protocol_numbers{$k} = $v;
@@ -110,19 +111,19 @@ C<Net::Traces::TSH> can be installed like any CPAN module.  In
 particular, consider using Andreas Koenig's CPAN module for all your
 CPAN module installation needs.
 
-If you have downloaded the C<Net::Traces::TSH> tarball, decompress and
-untar it, and proceed as follows:
-
- perl Makefile.PL
- make
- make test
- make install
-
 To find out more about installing CPAN modules type
 
  perldoc perlmodinstall
 
 at the command prompt.
+
+If you have already downloaded the C<Net::Traces::TSH> tarball,
+decompress and untar it, and proceed as follows:
+
+ perl Makefile.PL
+ make
+ make test
+ make install
 
 
 =head1 DESCRIPTION
@@ -131,8 +132,8 @@ With C<Net::Traces::TSH> you can analyze Internet Protocol (IP) packet
 traces in time sequenced headers (TSH), a binary network trace format.
 Daily TSH traces are available from the L<NLANR PMA web site|"SEE
 ALSO">.  Each 44-byte TSH record corresponds to an IP packet passing
-by a monitoring point.  Although there are no explicit section
-delimiters, each record is composed of three rather distinct sections.
+by a monitoring point.  Although there are no explicit delimiters,
+each record is composed of three sections.
 
 =over
 
@@ -210,49 +211,48 @@ text format.
 
 =head2 Data Structures
 
-The data collected from a trace is stored is a hash called
-%Trace_Summary, the main data structure in C<Net::Traces::TSH>.
-%Trace_Summary is initialized and populated by
-L<process_trace|"process_trace">.  The recommended way to get the
-trace summary information is by calling
+The data collected from a trace is stored is a hash called %Trace, the
+main data structure in C<Net::Traces::TSH>.  %Trace is initialized and
+populated by L<process_trace|"process_trace">.  The recommended way to
+get the trace summary information is by calling
 L<write_trace_summary|"write_trace_summary">, which stores the
-contents of %Trace_Summary in a CSV-formated text file, as shown in
+contents of %Trace in a CSV-formated text file, as shown in
 L<SYNOPSIS|"SYNOPSIS">.
 
-%Trace_Summary is not exported by default and was not designed to be
-accessed directly by user code.  However, if you know what you are
-doing, you can get a reference to %Trace_Summary by calling
+%Trace is not exported by default and was not designed to be accessed
+directly by user code.  However, if you know what you are doing, you
+can get a reference to %Trace by calling
 L<get_trace_summary_href|"get_trace_summary_href">.  If you choose to
 do so, the following subsections explain how you can access some of
-the information stored in %Trace_Summary.  See also L<Taking advantage
-of %Trace_Summary|"Taking advantage of %Trace_Summary">.
+the information stored in %Trace.  See also L<Taking advantage of
+%Trace|"Taking advantage of %Trace">.
 
 =head3 General Trace Information
 
 =over
 
-=item $Trace_Summary{filename}
+=item $Trace{filename}
 
 The L<trace FILENAME|"process_trace">.
 
-=item $Trace_Summary{log}
+=item $Trace{summary}
 
 The trace L<summary FILENAME|"write_trace_summary">.
 
-=item $Trace_Summary{starts}
+=item $Trace{starts}
 
 The first trace timestamp, in seconds, as it is recorded in the trace.
 
-=item $Trace_Summary{ends}
+=item $Trace{ends}
 
-The last trace timestamp, in seconds, after being normalized.
-Essentially, the number of seconds since $Trace_Summary{starts}.
+The last trace timestamp, in seconds, after being "normalized".
+Essentially, the number of seconds since $Trace{starts}.
 
-=item $Trace_Summary{records}
+=item $Trace{records}
 
 L<Number of records|"records_in"> in the trace.
 
-=item $Trace_Summary{unidirectional}
+=item $Trace{unidirectional}
 
 True, if each interface carries unidirectional traffic.
 
@@ -260,7 +260,7 @@ False, if there is bidirectional traffic in at least one interface.
 
 C<undef> if traffic directionality was not examined.
 
-=item $Trace_Summary{Link Capacity}
+=item $Trace{'Link Capacity'}
 
 The L<capacity of the monitored link|"process_trace"> in bits per
 second (b/s).
@@ -271,13 +271,12 @@ second (b/s).
 
 =over
 
-=item $Trace_Summary{IP}{'Total Packets'}
+=item $Trace{IP}{'Total Packets'}
 
-=item $Trace_Summary{IP}{'Total Bytes'}
+=item $Trace{IP}{'Total Bytes'}
 
 Number of IP packets and bytes, respectively, in the trace.  The
-number of IP packets should be equal to the number of records in the
-trace.
+number of IP packets should equal the number of records in the trace.
 
 =back
 
@@ -285,16 +284,16 @@ trace.
 
 =over
 
-=item $Trace_Summary{IP}{'DF Packets'}
+=item $Trace{IP}{'DF Packets'}
 
-=item $Trace_Summary{IP}{'DF Bytes'}
+=item $Trace{IP}{'DF Bytes'}
 
 Number of IP packets and bytes, respectively, requesting no
 fragmentation ('Do not Fragment').
 
-=item $Trace_Summary{IP}{'MF Packets'}
+=item $Trace{IP}{'MF Packets'}
 
-=item $Trace_Summary{IP}{'MF Bytes'}
+=item $Trace{IP}{'MF Bytes'}
 
 Number of IP packets and bytes, respectively, indicating that 'More
 Fragments' follow.
@@ -305,31 +304,31 @@ Fragments' follow.
 
 =over
 
-=item $Trace_Summary{IP}{'Normal Packets'}
+=item $Trace{IP}{'Normal Packets'}
 
-=item $Trace_Summary{IP}{'Normal Bytes'}
+=item $Trace{IP}{'Normal Bytes'}
 
 Number of IP packets and bytes, respectively, requesting no particular
 treatment (best effort traffic).  None of the DiffServ and ECN bits are
 set.
 
-=item $Trace_Summary{IP}{'Class Selector Packets'}
+=item $Trace{IP}{'Class Selector Packets'}
 
-=item $Trace_Summary{IP}{'Class Selector Bytes'}
+=item $Trace{IP}{'Class Selector Bytes'}
 
 Number of IP packets and bytes, respectively, with Class Selector bits
 set.
 
-=item $Trace_Summary{IP}{'AF PHB Packets'}
+=item $Trace{IP}{'AF PHB Packets'}
 
-=item $Trace_Summary{IP}{'AF PHB Bytes'}
+=item $Trace{IP}{'AF PHB Bytes'}
 
 Number of IP packets and bytes, respectively, requesting Assured
 Forwarding Per-Hop Behavior (PHB).
 
-=item $Trace_Summary{IP}{'EF PHB Packets'}
+=item $Trace{IP}{'EF PHB Packets'}
 
-=item $Trace_Summary{IP}{'EF PHB Bytes'}
+=item $Trace{IP}{'EF PHB Bytes'}
 
 Number of IP packets and bytes, respectively, requesting Expedited
 Forwarding Per-Hop Behavior (PHB)
@@ -340,16 +339,16 @@ Forwarding Per-Hop Behavior (PHB)
 
 =over
 
-=item $Trace_Summary{IP}{'ECT Packets'}
+=item $Trace{IP}{'ECT Packets'}
 
-=item $Trace_Summary{IP}{'ECT Bytes'}
+=item $Trace{IP}{'ECT Bytes'}
 
 Number of IP packets and bytes, respectively, with either of the ECT
 bits set.  These packets should be carrying ECN-aware traffic.
 
-=item $Trace_Summary{IP}{'CE Packets'}
+=item $Trace{IP}{'CE Packets'}
 
-=item $Trace_Summary{IP}{'CE Bytes'}
+=item $Trace{IP}{'CE Bytes'}
 
 Number of IP packets and bytes, respectively, with the CE bit set.
 These packets carry ECN-capable traffic that has been marked at an
@@ -360,36 +359,36 @@ ECN-aware router.
 =head3 Transport Protocols
 
 Besides the summary information about the trace itself and statistics
-about IP, %Trace_Summary maintains information about the transport
+about IP, %Trace maintains information about the transport
 protocols present in the trace.  Based on the IP header,
-%Trace_Summary maintains the same statistics mentioned in the
+%Trace maintains the same statistics mentioned in the
 L<previous section|"Internet Protocol"> for TCP, UDP and other
 transport protocols with an IANA assigned number.  For example,
 
 =over
 
-=item $Trace_Summary{Transport}{TCP}{'Total Packets'}
+=item $Trace{Transport}{TCP}{'Total Packets'}
 
-=item $Trace_Summary{Transport}{TCP}{'Total Bytes'}
+=item $Trace{Transport}{TCP}{'Total Bytes'}
 
 Number of TCP segments and the corresponding bytes (including the IP
 and TCP headers) in the trace.
 
-=item $Trace_Summary{Transport}{UDP}{'Total Packets'}
+=item $Trace{Transport}{UDP}{'Total Packets'}
 
-=item $Trace_Summary{Transport}{UDP}{'Total Bytes'}
+=item $Trace{Transport}{UDP}{'Total Bytes'}
 
 Ditto, for UDP.
 
-=item $Trace_Summary{Transport}{ICMP}{'DF Packets'}
+=item $Trace{Transport}{ICMP}{'DF Packets'}
 
-=item $Trace_Summary{Transport}{ICMP}{'DF Bytes'}
+=item $Trace{Transport}{ICMP}{'DF Bytes'}
 
 Number of ICMP packets and bytes, respectively, with the DF bit set.
 
 =back
 
-=head2 Taking advantage of %Trace_Summary
+=head2 Taking advantage of %Trace
 
 The following example creates the trace summary file only if the TCP
 traffic in terms of bytes accounts for more than 90% of the total IP
@@ -406,7 +405,7 @@ traffic in the trace.
  #
  process_trace "some.tsh";
 
- # Get a reference to %Trace_Summary
+ # Get a reference to %Trace
  #
  my $ts_href = get_trace_summary_href;
 
@@ -422,7 +421,12 @@ traffic in the trace.
 # Hash array that holds statistical information about the trace we are
 # currently processing.
 #
-my %Trace_Summary;
+my %Trace;
+
+# Hash array that holds statistical information about the trace on a
+# per interface basis.
+#
+my %Interfaces;
 
 =head1 FUNCTIONS
 
@@ -434,17 +438,18 @@ L<exportable|"EXPORTS">.
 
   date_of FILENAME
 
-Converts the epoch timestamp, typically part of a TSH trace FILENAME
-downloaded from http://pma.nlanr.net/Traces to a human readable date.
-If the FILENAME contains a valid timestamp, date_of() returns the
-corresponding GMT date as a human readable string.  Otherwise, it
-returns I<false>.
-
-For example,
+TSH traces downloaded from the L<NLANR PMA trace repository|"SEE
+ALSO"> typically contain a timestamp as part of their filename.
+date_of() converts the timestamp to a human readable format.  That is,
+if FILENAME contains a valid timestamp, date_of() returns the
+corresponding GMT date as a human readable string.  For example,
 
  date_of 'ODU-1073132115.tsh'
 
 returns C<Sat Jan  3 12:15:15 2004 GMT>.
+
+If the FILENAME does not contain a timestamp date_of() returns
+I<false>.
 
 =cut
 
@@ -456,7 +461,8 @@ sub date_of( $ ) {
 
  get_IP_address INTEGER
 
-Converts a 32-bit integer to an IP address. For example,
+Converts a 32-bit integer to an IP address in dotted decimal
+notation. For example,
 
  get_IP_address(167772172)
 
@@ -472,12 +478,12 @@ sub get_IP_address ( $ ) {
 
  get_trace_summary_href
 
-Returns a hash I<reference> to L<%Trace_Summary|"Data Structures">.
+Returns a hash I<reference> to L<%Trace|"Data Structures">.
 
 =cut
 
 sub get_trace_summary_href() {
-  return \%Trace_Summary;
+  return \%Trace;
 }
 
 =head2 process_trace
@@ -487,7 +493,7 @@ sub get_trace_summary_href() {
  process_trace FILENAME, NUMBER, TEXT_FILENAME
 
 If called in a void context process_trace() examines the binary TSH
-trace stored in FILENAME, and populates L<%Trace_Summary|"Data
+trace stored in FILENAME, and populates L<%Trace|"Data
 Structures">.
 
 NUMBER specifies the L<capacity of the monitored link|"General Trace
@@ -601,28 +607,28 @@ from the segment header.
 
 sub process_trace( $ ; $$ ) {
 
-  # Reset %Trace_Summary before starting processing
+  # Reset %Trace before starting processing
   #
-  %Trace_Summary = ();
+  %Trace = ();
 
   # Open trace file
   #
-  $Trace_Summary{filename} = shift
+  $Trace{filename} = shift
     or croak 'No trace filename provided';
 
-  open(INPUT, '<', $Trace_Summary{filename})
-    or croak "Cannot open $Trace_Summary{filename} for processing. $!";
+  open(INPUT, '<', $Trace{filename})
+    or croak "Cannot open $Trace{filename} for processing. $!";
 
   binmode INPUT; # Needed for non-UNIX OSes; no harm in UNIX
 
   # Sanity check: Does the trace contain an integer number of records?
   #
-  $Trace_Summary{records} = records_in $Trace_Summary{filename}
+  $Trace{records} = records_in $Trace{filename}
     or croak
-      "\n\'$Trace_Summary{filename}\' may be corrupted: ",
+      "\n\'$Trace{filename}\' may be corrupted: ",
       'Number of records is not an integer. Trace processing aborted';
 
-  $Trace_Summary{'Link Capacity'} = shift || 155_520_000;
+  $Trace{'Link Capacity'} = shift || 155_520_000;
 
   my $text_trace_filename = shift;
 
@@ -630,8 +636,7 @@ sub process_trace( $ ; $$ ) {
     ( open(TCPDUMP, '>', $text_trace_filename)
       or croak "Cannot open $text_trace_filename. $!" );
 
-  print STDERR "Processing $Trace_Summary{filename}...\n"
-    if $Verbose;
+  print STDERR "Processing $Trace{filename}...\n" if $Verbose;
 
   # Determine if we should collect statistics about the %senders and
   # the %segments.  If process_trace() was called in a void context
@@ -642,17 +647,13 @@ sub process_trace( $ ; $$ ) {
 
   # If process_trace() is called in a void context, we will not
   # examine traffic direction, thus undef
-  # $Trace_Summary{unidirectional}.  Otherwise, assume that traffic is
+  # $Trace{unidirectional}.  Otherwise, assume that traffic is
   # unidirectional, until proven otherwise.
   #
-  $want_senders_segments ? $Trace_Summary{unidirectional} = 1
-                         : undef $Trace_Summary{unidirectional};
+  $want_senders_segments ? $Trace{unidirectional} = 1
+                         : undef $Trace{unidirectional};
 
   my (%senders, %segments);
-
-  # Timestamp of the last processed record.
-  #
-  $Trace_Summary{ends} = 0;
 
   # Read the trace file, record by record
   #
@@ -707,16 +708,31 @@ sub process_trace( $ ; $$ ) {
     croak 'Microseconds record field exceeds 1,000,000. Processing aborted'
       unless $t_usec < 1;
 
-    # Get the first timestamp in the trace, and use it to normalize
-    # the rest of the timestamps in the trace.
-    #
-    $Trace_Summary{starts} = $t_sec + $t_usec
-      unless defined $Trace_Summary{starts};
+    unless ( defined $Trace{starts} ) {
+      # Get the first timestamp in the trace, and use it to normalize
+      # the rest of the timestamps in the trace.
+      #
+      $Trace{starts} = $t_sec + $t_usec;
+      # Timestamp of the last processed record.
+      #
+      $Trace{ends} = 0.0;
+    }
+
+    unless ( defined $Interfaces{$interface}{starts} ) {
+      # Ditto, but for each interface.
+      #
+      $Interfaces{$interface}{starts} = $t_sec + $t_usec;
+      $Interfaces{$interface}{ends} = 0.0;
+    }
+
+    $Interfaces{$interface}{records}++;
 
     # Combine the two parts of the timestamp ($t_sec and $t_usec) in
     # one variable and normalize using the first timestamp in the trace
     #
-    my $timestamp = $t_sec + $t_usec - $Trace_Summary{starts};
+    my $timestamp = $t_sec + $t_usec - $Trace{starts};
+
+    my $if_timestamp = $t_sec + $t_usec - $Interfaces{$interface}{starts};
 
     # Convert the $protocol number to the corresponding protocol name
     #
@@ -732,23 +748,32 @@ sub process_trace( $ ; $$ ) {
     # practice, though, it is possible to have segments recorded with
     # the same timestamp.  However, we should never go back in time.
     #
-    if ($Trace_Summary{ends} > $timestamp) {
+    if ( $Trace{ends} > $timestamp ) {
       # If this is a TCP segment then this can play a big role if we
       # are interested in extracting the segment time series, so it's
       # better that we abort processing.
       #
-      warn "Timestamps do not increase monotonically (Prot $protocol)\n";
+      if ( $Interfaces{$interface}{ends} > $if_timestamp ) {
+	print "Timestamps do not increase monotonically (Prot $protocol)\n";
+      }
+      else {
+	print "Timestamps increase monotonically on per-interface basis, but not across the trace (Prot $protocol)\n";
+      }
 
       $want_senders_segments
-	and croak "Processing aborted for $Trace_Summary{filename}";
+	and croak "Processing aborted for $Trace{filename}";
     }
 
     ##################################################################
     #                              IP
     ##################################################################
-    $Trace_Summary{IP}{'Total Packets'}++;
-    $Trace_Summary{IP}{'Total Bytes'} += $ip_len;
-    $Trace_Summary{IP}{'Packet Size'}{$ip_len}++;
+    $Trace{IP}{'Total Packets'}++;
+    $Trace{IP}{'Total Bytes'} += $ip_len;
+    $Trace{IP}{'Packet Size'}{$ip_len}++;
+
+    $Interfaces{$interface}{IP}{'Total Packets'}++;
+    $Interfaces{$interface}{IP}{'Total Bytes'} += $ip_len;
+    $Interfaces{$interface}{IP}{'Packet Size'}{$ip_len}++;
 
     # Get the IP version
     #
@@ -766,28 +791,44 @@ sub process_trace( $ ; $$ ) {
     ##################################################################
     #                      Transport protocols
     ##################################################################
-    $Trace_Summary{Transport}{$protocol}{'Total Packets'}++;
-    $Trace_Summary{Transport}{$protocol}{'Total Bytes'} += $ip_len;
-    $Trace_Summary{Transport}{$protocol}{'Packet Size'}{$ip_len}++;
+    $Trace{Transport}{$protocol}{'Total Packets'}++;
+    $Trace{Transport}{$protocol}{'Total Bytes'} += $ip_len;
+    $Trace{Transport}{$protocol}{'Packet Size'}{$ip_len}++;
+
+    $Interfaces{$interface}{Transport}{$protocol}{'Total Packets'}++;
+    $Interfaces{$interface}{Transport}{$protocol}{'Total Bytes'} += $ip_len;
+    $Interfaces{$interface}{Transport}{$protocol}{'Packet Size'}{$ip_len}++;
 
     ##################################################################
     #                      D(o not)F(ragment) bit
     ##################################################################
     if ($flags_offset & 0x4000) {
-      $Trace_Summary{IP}{'DF Packets'}++;
-      $Trace_Summary{IP}{'DF Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'DF Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'DF Bytes'} += $ip_len;
+      $Trace{IP}{'DF Packets'}++;
+      $Trace{IP}{'DF Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'DF Packets'}++;
+      $Trace{Transport}{$protocol}{'DF Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'DF Packets'}++;
+      $Interfaces{$interface}{IP}{'DF Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'DF Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'DF Bytes'} += $ip_len;
+
     }
 
     ##################################################################
     #                      M(ore)F(ragments) bit
     ##################################################################
     if ($flags_offset & 0x2000) {
-      $Trace_Summary{IP}{'MF Packets'}++;
-      $Trace_Summary{IP}{'MF Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'MF Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'MF Bytes'} += $ip_len;
+      $Trace{IP}{'MF Packets'}++;
+      $Trace{IP}{'MF Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'MF Packets'}++;
+      $Trace{Transport}{$protocol}{'MF Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'MF Packets'}++;
+      $Interfaces{$interface}{IP}{'MF Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'MF Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'MF Bytes'} += $ip_len;
+
     }
 
     ##################################################################
@@ -806,36 +847,59 @@ sub process_trace( $ ; $$ ) {
       # (updated ToS definition), RFC 2474 (DiffServ defines DSCP),
       # RFC 2780: No DiffServ code point (DSCP) set
       #
-      $Trace_Summary{IP}{'Normal Packets'}++;
-      $Trace_Summary{IP}{'Normal Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'Normal Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'Normal Bytes'} += $ip_len;
+      $Trace{IP}{'Normal Packets'}++;
+      $Trace{IP}{'Normal Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'Normal Packets'}++;
+      $Trace{Transport}{$protocol}{'Normal Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'Normal Packets'}++;
+      $Interfaces{$interface}{IP}{'Normal Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'Normal Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'Normal Bytes'} += $ip_len;
+
     }
     elsif ( $dscp % 0b001000 == 0 ) {
       # Class Selector Code points     -- RFC 2474
       #
-      $Trace_Summary{IP}{'Class Selector Packets'}++;
-      $Trace_Summary{IP}{'Class Selector Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'Class Selector Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'Class Selector Bytes'} +=$ip_len;
+      $Trace{IP}{'Class Selector Packets'}++;
+      $Trace{IP}{'Class Selector Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'Class Selector Packets'}++;
+      $Trace{Transport}{$protocol}{'Class Selector Bytes'} +=$ip_len;
+
+      $Interfaces{$interface}{IP}{'Class Selector Packets'}++;
+      $Interfaces{$interface}{IP}{'Class Selector Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'Class Selector Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'Class Selector Bytes'} +=$ip_len;
     }
     elsif ( $dscp % 2 == 0 ) {
       $dscp >>= 1;
       if ( 0b00100 < $dscp and $dscp < 0b10100 ) {
 	# Assured Forwarding (AF) PHB -- RFC 2597
 	#
-	$Trace_Summary{IP}{'AF PHB Packets'}++;
-	$Trace_Summary{IP}{'AF PHB Bytes'} += $ip_len;
-	$Trace_Summary{Transport}{$protocol}{'AF PHB Packets'}++;
-	$Trace_Summary{Transport}{$protocol}{'AF PHB Bytes'} += $ip_len;
+	$Trace{IP}{'AF PHB Packets'}++;
+	$Trace{IP}{'AF PHB Bytes'} += $ip_len;
+	$Trace{Transport}{$protocol}{'AF PHB Packets'}++;
+	$Trace{Transport}{$protocol}{'AF PHB Bytes'} += $ip_len;
+
+	$Interfaces{$interface}{IP}{'AF PHB Packets'}++;
+	$Interfaces{$interface}{IP}{'AF PHB Bytes'} += $ip_len;
+	$Interfaces{$interface}{Transport}{$protocol}{'AF PHB Packets'}++;
+	$Interfaces{$interface}{Transport}{$protocol}{'AF PHB Bytes'} += $ip_len;
+
       }
       elsif ( $dscp == 0b10111 ) {
 	# Expedited Forwarding (EF) PHB -- RFC 2598
 	#
-	$Trace_Summary{IP}{'EF PHB Packets'}++;
-	$Trace_Summary{IP}{'EF PHB Bytes'} += $ip_len;
-	$Trace_Summary{Transport}{$protocol}{'EF PHB Packets'}++;
-	$Trace_Summary{Transport}{$protocol}{'EF PHB Bytes'} += $ip_len;
+	$Trace{IP}{'EF PHB Packets'}++;
+	$Trace{IP}{'EF PHB Bytes'} += $ip_len;
+	$Trace{Transport}{$protocol}{'EF PHB Packets'}++;
+	$Trace{Transport}{$protocol}{'EF PHB Bytes'} += $ip_len;
+
+	$Interfaces{$interface}{IP}{'EF PHB Packets'}++;
+	$Interfaces{$interface}{IP}{'EF PHB Bytes'} += $ip_len;
+	$Interfaces{$interface}{Transport}{$protocol}{'EF PHB Packets'}++;
+	$Interfaces{$interface}{Transport}{$protocol}{'EF PHB Bytes'} += $ip_len;
+
       }
     }
 
@@ -847,33 +911,55 @@ sub process_trace( $ ; $$ ) {
     #
     my $ecn = $tos & 0b11;
     if ( $ecn ) {
-      $Trace_Summary{IP}{'ECT Packets'}++;
-      $Trace_Summary{IP}{'ECT Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'ECT Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'ECT Bytes'} += $ip_len;
+      $Trace{IP}{'ECT Packets'}++;
+      $Trace{IP}{'ECT Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'ECT Packets'}++;
+      $Trace{Transport}{$protocol}{'ECT Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'ECT Packets'}++;
+      $Interfaces{$interface}{IP}{'ECT Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'ECT Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'ECT Bytes'} += $ip_len;
     }
 
     if ( $ecn == 0b11 ) {
-      $Trace_Summary{IP}{'CE Packets'}++;
-      $Trace_Summary{IP}{'CE Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'CE Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'CE Bytes'} += $ip_len;
+      $Trace{IP}{'CE Packets'}++;
+      $Trace{IP}{'CE Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'CE Packets'}++;
+      $Trace{Transport}{$protocol}{'CE Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'CE Packets'}++;
+      $Interfaces{$interface}{IP}{'CE Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'CE Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'CE Bytes'} += $ip_len;
+
     }
 
     ##################################################################
     #                          IP Options
     ##################################################################
     if ( $ihl ==  20 ) {
-      $Trace_Summary{IP}{'No IP Options Packets'}++;
-      $Trace_Summary{IP}{'No IP Options Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'No IP Options Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'No IP Options Bytes'} += $ip_len;
+      $Trace{IP}{'No IP Options Packets'}++;
+      $Trace{IP}{'No IP Options Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'No IP Options Packets'}++;
+      $Trace{Transport}{$protocol}{'No IP Options Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'No IP Options Packets'}++;
+      $Interfaces{$interface}{IP}{'No IP Options Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'No IP Options Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'No IP Options Bytes'} += $ip_len;
+
     }
     elsif ( $ihl > 20 ) {
-      $Trace_Summary{IP}{'IP Options Packets'}++;
-      $Trace_Summary{IP}{'IP Options Bytes'} += $ip_len;
-      $Trace_Summary{Transport}{$protocol}{'IP Options Packets'}++;
-      $Trace_Summary{Transport}{$protocol}{'IP Options Bytes'} += $ip_len;
+      $Trace{IP}{'IP Options Packets'}++;
+      $Trace{IP}{'IP Options Bytes'} += $ip_len;
+      $Trace{Transport}{$protocol}{'IP Options Packets'}++;
+      $Trace{Transport}{$protocol}{'IP Options Bytes'} += $ip_len;
+
+      $Interfaces{$interface}{IP}{'IP Options Packets'}++;
+      $Interfaces{$interface}{IP}{'IP Options Bytes'} += $ip_len;
+      $Interfaces{$interface}{Transport}{$protocol}{'IP Options Packets'}++;
+      $Interfaces{$interface}{Transport}{$protocol}{'IP Options Bytes'} += $ip_len;
     }
     else {
       # This is an extremely unlikely event, but just in case...
@@ -900,9 +986,15 @@ sub process_trace( $ ; $$ ) {
 	# Count the number of SYNs, SYN/ACKs and SYNs carrying a
 	# payload in the trace.
 	#
-	$Trace_Summary{Transport}{TCP}{SYN}{$tcp_hl}++;
-	$Trace_Summary{Transport}{TCP}{'SYN/ACK'}{$tcp_hl}++ if $ack;
-	$Trace_Summary{Transport}{TCP}{'SYN/Payload'}++
+	$Trace{Transport}{TCP}{SYN}{$tcp_hl}++;
+	$Trace{Transport}{TCP}{'SYN/ACK'}{$tcp_hl}++ if $ack;
+	$Trace{Transport}{TCP}{'SYN/Payload'}++
+	  if $tcp_payload > 0;
+
+	$Interfaces{$interface}{Transport}{TCP}{SYN}{$tcp_hl}++;
+	$Interfaces{$interface}{Transport}{TCP}{'SYN/ACK'}{$tcp_hl}++
+	  if $ack;
+	$Interfaces{$interface}{Transport}{TCP}{'SYN/Payload'}++
 	  if $tcp_payload > 0;
 
 	# Collect the receiver's advertised window (awnd), for all
@@ -913,25 +1005,39 @@ sub process_trace( $ ; $$ ) {
 	# "soft count".  Practice has shown that the soft count is
 	# always greater.
 	#
-	$Trace_Summary{Transport}{TCP}{rwnd}{$win}++;
-	$Trace_Summary{Transport}{TCP}{awnd}{$win}++
+	$Trace{Transport}{TCP}{rwnd}{$win}++;
+	$Trace{Transport}{TCP}{awnd}{$win}++
+	  if $tcp_hl == 20;
+
+	$Interfaces{$interface}{Transport}{TCP}{rwnd}{$win}++;
+	$Interfaces{$interface}{Transport}{TCP}{awnd}{$win}++
 	  if $tcp_hl == 20;
       }
 
       # Count the number of ACKs, pure ACKs, etc.
       #
       if ( $ack ) {
-	$Trace_Summary{Transport}{TCP}{'Total ACKs'}++;
+	$Trace{Transport}{TCP}{'Total ACKs'}++;
+
+	$Interfaces{$interface}{Transport}{TCP}{'Total ACKs'}++;
 
 	if ( $tcp_hl == 20 ) {
-	  $Trace_Summary{Transport}{TCP}{'Cumulative ACKs'}++;
+	  $Trace{Transport}{TCP}{'Cumulative ACKs'}++;
 
-	  $Trace_Summary{Transport}{TCP}{'Pure ACKs'}++
+	  $Trace{Transport}{TCP}{'Pure ACKs'}++
+	    if $tcp_payload == 0;
+
+	  $Interfaces{$interface}{Transport}{TCP}{'Cumulative ACKs'}++;
+
+	  $Interfaces{$interface}{Transport}{TCP}{'Pure ACKs'}++
 	    if $tcp_payload == 0;
 	}
 	elsif ( $tcp_hl > 20 ) {
-	  $Trace_Summary{Transport}{TCP}{'Options ACKs'}++;
-	  $Trace_Summary{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
+	  $Trace{Transport}{TCP}{'Options ACKs'}++;
+	  $Trace{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
+
+	  $Interfaces{$interface}{Transport}{TCP}{'Options ACKs'}++;
+	  $Interfaces{$interface}{Transport}{TCP}{'ACK Option Size'}{$tcp_hl}++;
 	}
 	else {
 	  # Yet another extremely unlikely event, but just in case...
@@ -968,7 +1074,7 @@ sub process_trace( $ ; $$ ) {
 
 	  carp "Duplicate timestamp $timestamp detected & replaced with ",
 	    $timestamp .= "1";
-	  $Trace_Summary{Transport}{TCP}{'Concurrent Segments'}++;
+	  $Trace{Transport}{TCP}{'Concurrent Segments'}++;
 	}
 
 	# Store the total length of the segment (headers + application
@@ -993,8 +1099,8 @@ sub process_trace( $ ; $$ ) {
 	# it is not clear (yet) how to isolate "incoming" from
 	# "outgoing" traffic.
 	#
-	$Trace_Summary{unidirectional} = 0
-	  if ( $Trace_Summary{unidirectional} and
+	$Trace{unidirectional} = 0
+	  if ( $Trace{unidirectional} and
 	       exists $senders{$interface}{"$dst,$dst_port,$src,$src_port"}
 	     );
       }
@@ -1033,7 +1139,8 @@ sub process_trace( $ ; $$ ) {
     # The following is used both for sanity checks and to store the
     # the duration of the trace
     #
-    $Trace_Summary{ends} = $timestamp;
+    $Trace{ends} = $timestamp;
+    $Interfaces{$interface}{ends} = $timestamp;
 
   } # end of while( read...)
 
@@ -1044,20 +1151,20 @@ sub process_trace( $ ; $$ ) {
 
   close TCPDUMP;
 
-  carp $Trace_Summary{Transport}{TCP}{'Concurrent Segments'},
+  carp $Trace{Transport}{TCP}{'Concurrent Segments'},
     ' TCP segments had the same timestamp with another segment'
-  if $Trace_Summary{Transport}{TCP}{'Concurrent Segments'}
+  if $Trace{Transport}{TCP}{'Concurrent Segments'}
      and $want_senders_segments;
 
   # Sanity check
   #
   my $total_packets;
-  foreach ( keys %{$Trace_Summary{Transport}} ) {
-    $total_packets += $Trace_Summary{Transport}{$_}{'Total Packets'};
+  foreach ( keys %{$Trace{Transport}} ) {
+    $total_packets += $Trace{Transport}{$_}{'Total Packets'};
   }
 
   croak "Total number of packets does not match total number of trace records"
-    unless $Trace_Summary{records} == $total_packets;
+    unless $Trace{records} == $total_packets;
 
   return (\%senders, \%segments) if $want_senders_segments;
 }
@@ -1099,7 +1206,7 @@ sub verbose () {
  write_trace_summary FILENAME
  write_trace_summary
 
-Writes the contents of L<%Trace_Summary|"Data Structures"> to FILENAME
+Writes the contents of L<%Trace|"Data Structures"> to FILENAME
 in comma separated values (CSV) format, a platform independent text
 format, excellent for storing tabular data.  CSV is both
 human-readable and suitable for further analysis using Perl or direct
@@ -1120,160 +1227,58 @@ sub write_trace_summary( ; $ ) {
   croak
     'Important trace information was not found. Call process_trace() before ',
     "calling write_trace_summary().\nTrace summary generation aborted"
-  unless ( $Trace_Summary{IP}{'Total Bytes'}
-	   and $Trace_Summary{IP}{'Total Packets'}
-	   and $Trace_Summary{ends}
+  unless ( $Trace{IP}{'Total Bytes'}
+	   and $Trace{IP}{'Total Packets'}
+	   and $Trace{ends}
 	 );
 	
   # Open the log file (expected to be .csv)
   #
-  $Trace_Summary{log} = shift || "$Trace_Summary{filename}.csv";
+  $Trace{summary} = shift || "$Trace{filename}.csv";
 
-  open(LOG, '>', $Trace_Summary{log})
-    or croak "Cannot write trace summary to $Trace_Summary{log}. $!";
+  open(LOG, '>', $Trace{summary})
+    or croak "Cannot write trace summary to $Trace{summary}. $!";
 
   print STDERR 'Generating trace summary... '
     if $Verbose;
 
   # Prepare to print general trace file information
   #
-  my $date = date_of $Trace_Summary{filename} || 'Unknown';
+  my $date = date_of $Trace{filename} || 'Unknown';
 
   print LOG <<GENERAL_INFO;
 GENERAL TRACE INFORMATION
-Filename,$Trace_Summary{filename},$date
-Duration,$Trace_Summary{ends}
-Records,$Trace_Summary{records}
+Filename,$Trace{filename},$date
+Duration,$Trace{ends}
+Records,$Trace{records}
 GENERAL_INFO
 
   print LOG 'Duplicate timestamps,',
-    $Trace_Summary{Transport}{TCP}{'Concurrent Segments'}, "\n"
-  if $Trace_Summary{Transport}{TCP}{'Concurrent Segments'};
-
-  # If traffic directionality has been determined (by
-  # write_sojourn_times()) then make a note in the final trace file
-  # summary.
-  #
-  my @interfaces;
-
-  if ( $Trace_Summary{unidirectional} ) {
-    # Keep the sorted list of interfaces for future use
-    #
-    @interfaces = sort keys %{$Trace_Summary{interfaces}};
-
-    print LOG
-      "One-way traffic in each interface\n\nTCP ACTIVITY STATISTICS\n",
-      ",Utilization,Active (s),Inactive (s),Segments,Overlapping Segments\n";
-
-    foreach my $if ( @interfaces ) {
-
-      foreach my $state ( 0, 1 ) {
-	$Trace_Summary{interfaces}{$if}{TCP}{'data bytes'} +=
-	  $Trace_Summary{interfaces}{$if}{$state}{bytes};
-      }
-
-      $Trace_Summary{interfaces}{$if}{TCP}{Dbps} =
-	$Trace_Summary{interfaces}{$if}{TCP}{'data bytes'} * 8
-	  /
-	$Trace_Summary{ends};
-
-      printf LOG "IF $if,%.6f,%.6f,%.6f,%d,%d\n",
-	      ( $Trace_Summary{interfaces}{$if}{TCP}{Dbps}
-		/ $Trace_Summary{'Link Capacity'} ),
-	      $Trace_Summary{interfaces}{$if}{active},
-	      $Trace_Summary{interfaces}{$if}{inactive},
-	      $Trace_Summary{Transport}{TCP}{Segments}{$if},
-	      $Trace_Summary{Transport}{TCP}{'Overlapping Segments'}{$if};
-    }
-  }
-  elsif ( defined $Trace_Summary{unidirectional} ) {
-    print LOG "Two-way traffic detected\n";
-  }
+    $Trace{Transport}{TCP}{'Concurrent Segments'}, "\n"
+  if $Trace{Transport}{TCP}{'Concurrent Segments'};
 
   printf LOG
     "\nTRAFFIC DENSITY\n,Pkts/s,Bytes/Pkt,b/s\nIP Total,%.0f,%.0f,%.0f",
-      $Trace_Summary{IP}{'Total Packets'} / $Trace_Summary{ends},
-      $Trace_Summary{IP}{'Total Bytes'} / $Trace_Summary{IP}{'Total Packets'},
-      $Trace_Summary{IP}{'Total Bytes'} * 8 / $Trace_Summary{ends};
+      $Trace{IP}{'Total Packets'} / $Trace{ends},
+      $Trace{IP}{'Total Bytes'} / $Trace{IP}{'Total Packets'},
+      $Trace{IP}{'Total Bytes'} * 8 / $Trace{ends};
 
-  if ( $Trace_Summary{Transport}{TCP}{'Total Packets'}) {
+  if ( $Trace{Transport}{TCP}{'Total Packets'}) {
     printf LOG
 	"\nTCP Total,%.0f,%.0f,%.0f",
-	$Trace_Summary{Transport}{TCP}{'Total Packets'} / $Trace_Summary{ends},
-        ( $Trace_Summary{Transport}{TCP}{'Total Bytes'}
-	   / $Trace_Summary{Transport}{TCP}{'Total Packets'} ),
-	( ( $Trace_Summary{Transport}{TCP}{'Total Bytes'} * 8 )
-	  / $Trace_Summary{ends} );
+	$Trace{Transport}{TCP}{'Total Packets'} / $Trace{ends},
+        ( $Trace{Transport}{TCP}{'Total Bytes'}
+	   / $Trace{Transport}{TCP}{'Total Packets'} ),
+	( ( $Trace{Transport}{TCP}{'Total Bytes'} * 8 )
+	  / $Trace{ends} );
   }
   else {
     print LOG "\nTCP Total,0,0,0";
   }
 
-  if ( $Trace_Summary{interfaces} ) {
-
-    print LOG "\nTCP Data-carrying segments only";
-
-    foreach my $if ( @interfaces ) {
-      foreach my $state (0, 1) {
-	$Trace_Summary{interfaces}{$if}{TCP}{'data segments'} +=
-	  $Trace_Summary{interfaces}{$if}{$state}{packets};
-      }
-
-      $Trace_Summary{interfaces}{$if}{TCP}{Dps} =
-	$Trace_Summary{interfaces}{$if}{TCP}{'data segments'}
-	  / $Trace_Summary{ends};
-
-      $Trace_Summary{interfaces}{$if}{TCP}{BpS} =
-	$Trace_Summary{interfaces}{$if}{TCP}{'data bytes'}
-	  / $Trace_Summary{interfaces}{$if}{TCP}{'data segments'};
-
-      printf LOG "\nIF $if,%.0f,%.0f,%.0f",
-	$Trace_Summary{interfaces}{$if}{TCP}{Dps},
-	$Trace_Summary{interfaces}{$if}{TCP}{BpS},
-	$Trace_Summary{interfaces}{$if}{TCP}{Dbps};
-
-      foreach my $state (0, 1) {
-	printf LOG "\nIF $if %s,%.0f,%.0f,%.0f",
-	  $state ? 'RTX' : 'CLR',
-	  ( $Trace_Summary{interfaces}{$if}{$state}{packets}
-	     / $Trace_Summary{interfaces}{$if}{$state}{'total time'} ),
-	  ( $Trace_Summary{interfaces}{$if}{$state}{bytes}
-	     / $Trace_Summary{interfaces}{$if}{$state}{packets} ),
-	  ( $Trace_Summary{interfaces}{$if}{$state}{bytes} * 8
-	     / $Trace_Summary{interfaces}{$if}{$state}{'total time'} );
-      }
-    }
-
-    print LOG <<PERIODS;
-
-
-CLR/RTX PERIODS
-,Total,Mean Period (s),Ratio,Data Segments,Segments Ratio,Segments/Period
-PERIODS
-
-    foreach my $if ( @interfaces) {
-      foreach my $state (0, 1) {
-	printf LOG "\nIF $if %s,%d,%.6f,%.6f,%d,%.6f,%.1f",
-	  $state ? 'RTX' : 'CLR' ,
-	  $Trace_Summary{interfaces}{$if}{$state}{periods},
-	  ( $Trace_Summary{interfaces}{$if}{$state}{'total time'}
-	     / $Trace_Summary{interfaces}{$if}{$state}{periods} ),
-	  ( $Trace_Summary{interfaces}{$if}{$state}{'total time'}
-	     / $Trace_Summary{ends} ),
-	  $Trace_Summary{interfaces}{$if}{$state}{packets},
-	  ( $Trace_Summary{interfaces}{$if}{$state}{packets}
-	     / $Trace_Summary{interfaces}{$if}{TCP}{'data segments'} ),
-	  ( $Trace_Summary{interfaces}{$if}{$state}{packets}
-	     / $Trace_Summary{interfaces}{$if}{$state}{periods} );
-      }
-    }
-  }
-
   my @transports;
 
-  foreach ( sort keys %{$Trace_Summary{Transport}} ) {
-    push @transports, $_;
-  }
+  push @transports, sort keys %{$Trace{Transport}};
 
   foreach my $metric ('Packets', 'Bytes') {
     print LOG
@@ -1289,7 +1294,7 @@ PERIODS
     # on a (sort keys %hash) foreach loop would fail to place the data
     # collected in the "Class Selector column", but it would place it
     # in the "DF column".  Moreover, this allows us to use more
-    # descriptive key names for %Trace_Summary, and we save a couple
+    # descriptive key names for %Trace, and we save a couple
     # of sort operations.
     #
     my @data_points = ( 'Total ', 'DF ', 'MF ', 'ECT ', 'CE ',
@@ -1300,30 +1305,30 @@ PERIODS
     print LOG join( ',', @data_points), "\nIP";
 
     foreach ( @data_points ) {
-      print_value(\*LOG, $Trace_Summary{IP}{"$_$metric"});
+      print_value(\*LOG, $Trace{IP}{"$_$metric"});
     }
 
     foreach my $protocol ( @transports ) {
       print LOG "\n$protocol";
       foreach ( @data_points ) {
 	print_value( \*LOG,
-	       $Trace_Summary{Transport}{$protocol}{join "", $_, $metric} );
+	       $Trace{Transport}{$protocol}{join "", $_, $metric} );
       }
     }
   }
 
   # Print distribution of ACKs
   #
-  if ( $Trace_Summary{Transport}{TCP}{'Total ACKs'}) {
+  if ( $Trace{Transport}{TCP}{'Total ACKs'}) {
     print LOG "\n\nTCP ACKNOWLEDGEMENTS";
     foreach ( 'Total ACKs', 'Cumulative ACKs', 'Pure ACKs', 'Options ACKs' ) {
-      print LOG join ",", "\n$_", $Trace_Summary{Transport}{TCP}{$_};
+      print LOG join ",", "\n$_", $Trace{Transport}{TCP}{$_};
     }
   }
 
   # Print the TCP Advertised window distribution
   #
-  if ( $Trace_Summary{Transport}{TCP}{rwnd} ) {
+  if ( $Trace{Transport}{TCP}{rwnd} ) {
     print LOG
       "\n\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
 
@@ -1338,42 +1343,42 @@ PERIODS
     #
     no warnings qw(uninitialized);
 
-    foreach ( sort numerically keys %{$Trace_Summary{Transport}{TCP}{rwnd}} ) {
+    foreach ( sort numerically keys %{$Trace{Transport}{TCP}{rwnd}} ) {
       print LOG "\n$_,",
-	$Trace_Summary{Transport}{TCP}{rwnd}{$_}
-	  - $Trace_Summary{Transport}{TCP}{awnd}{$_}, ',',
-	$Trace_Summary{Transport}{TCP}{awnd}{$_};
+	$Trace{Transport}{TCP}{rwnd}{$_}
+	  - $Trace{Transport}{TCP}{awnd}{$_}, ',',
+	$Trace{Transport}{TCP}{awnd}{$_};
     }
   }
 
   # Print the TCP Options-carrying SYN size distribution
   #
-  if ( $Trace_Summary{Transport}{TCP}{SYN} ) {
+  if ( $Trace{Transport}{TCP}{SYN} ) {
     print LOG
       "\n\nTCP OPTIONS NEGOTIATION\n",
       'TCP Header Length (Bytes),SYN,SYN/ACK';
 
     no warnings qw(uninitialized);
 
-    foreach ( sort numerically keys %{$Trace_Summary{Transport}{TCP}{SYN}} ) {
+    foreach ( sort numerically keys %{$Trace{Transport}{TCP}{SYN}} ) {
       print LOG "\n$_,",
-	$Trace_Summary{Transport}{TCP}{SYN}{$_}
-	  - $Trace_Summary{Transport}{TCP}{'SYN/ACK'}{$_}, ',',
-	$Trace_Summary{Transport}{TCP}{'SYN/ACK'}{$_};
+	$Trace{Transport}{TCP}{SYN}{$_}
+	  - $Trace{Transport}{TCP}{'SYN/ACK'}{$_}, ',',
+	$Trace{Transport}{TCP}{'SYN/ACK'}{$_};
     }
 
-    print LOG "\nSYN/Payload,", $Trace_Summary{Transport}{TCP}{'SYN/Payload'};
+    print LOG "\nSYN/Payload,", $Trace{Transport}{TCP}{'SYN/Payload'};
   }
 
   # Print the distribution of ACKs carrying TCP options
   #
-  if ( $Trace_Summary{Transport}{TCP}{'Options ACKs'}) {
+  if ( $Trace{Transport}{TCP}{'Options ACKs'}) {
     print LOG "\n\nTCP OPTIONS ACK USAGE\nTCP Header Length (Bytes),Count";
 
     no warnings qw(uninitialized);
 
-    foreach (sort keys %{$Trace_Summary{Transport}{TCP}{'ACK Option Size'}}) {
-      print LOG "\n$_,", $Trace_Summary{Transport}{TCP}{'ACK Option Size'}{$_};
+    foreach (sort keys %{$Trace{Transport}{TCP}{'ACK Option Size'}}) {
+      print LOG "\n$_,", $Trace{Transport}{TCP}{'ACK Option Size'}{$_};
     }
   }
 
@@ -1381,19 +1386,274 @@ PERIODS
   #
   print LOG join ',', "\n\nPACKET SIZE DISTRIBUTION\nBytes,IP", @transports;
 
-  foreach ( sort numerically keys %{$Trace_Summary{IP}{'Packet Size'}} ) {
-      print LOG "\n$_,$Trace_Summary{IP}{'Packet Size'}{$_}";
+  foreach ( sort numerically keys %{$Trace{IP}{'Packet Size'}} ) {
+      print LOG "\n$_,$Trace{IP}{'Packet Size'}{$_}";
 
       foreach my $prt ( @transports ) {
-	print_value(\*LOG, $Trace_Summary{Transport}{$prt}{'Packet Size'}{$_});
+	print_value(\*LOG, $Trace{Transport}{$prt}{'Packet Size'}{$_});
       }
     }
 
   print LOG "\n\n";
 
+  #####################################################################
+  #                  Per-interface summary statistics
+  #####################################################################
+  my @interfaces = sort numerically keys %Interfaces;
+
+  my @data_points = ( 'Total ', 'DF ', 'MF ', 'ECT ', 'CE ',
+		      'Normal ', 'Class Selector ', 'AF PHB ',
+		      'EF PHB ', 'No IP Options ', 'IP Options ',
+		    );
+
+#====================================================================
+
+  foreach my $if (@interfaces) {
+    no warnings qw(uninitialized);
+
+    my @transports = sort keys %{$Interfaces{$if}{Transport}};
+
+    $Interfaces{all}{records} += $Interfaces{$if}{records};
+
+    $Interfaces{all}{ends} = $Interfaces{all}{ends} < $Interfaces{$if}{ends}
+      ? $Interfaces{$if}{ends} : $Interfaces{all}{ends};
+
+    foreach my $metric ('Packets', 'Bytes') {
+
+      foreach ( @data_points ) {
+	$Interfaces{all}{IP}{"$_$metric"}
+	  += $Interfaces{$if}{IP}{"$_$metric"};
+
+	foreach my $protocol ( @transports ) {
+	  $Interfaces{all}{Transport}{$protocol}{"$_$metric"}
+	    += $Interfaces{$if}{Transport}{$protocol}{"$_$metric"};
+	}
+      }
+    }
+
+    # ACKs
+    #
+    foreach ( 'Total ACKs', 'Cumulative ACKs', 'Pure ACKs', 'Options ACKs' ) {
+      $Interfaces{all}{Transport}{TCP}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{$_};
+    }
+
+    # Advertized window
+    #
+    foreach ( sort numerically keys %{$Trace{Transport}{TCP}{rwnd}} ) {
+      $Interfaces{all}{Transport}{TCP}{rwnd}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{rwnd}{$_};
+
+      $Interfaces{all}{Transport}{TCP}{awnd}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{awnd}{$_};
+    }
+
+    # SYN and SYN/ACKs
+    #
+    foreach ( sort numerically keys %{$Trace{Transport}{TCP}{SYN}} ) {
+      $Interfaces{all}{Transport}{TCP}{SYN}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{SYN}{$_};
+
+      $Interfaces{all}{Transport}{TCP}{'SYN/ACK'}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{'SYN/ACK'}{$_};
+
+      $Interfaces{all}{Transport}{TCP}{'SYN/Payload'}
+	+= $Interfaces{$if}{Transport}{TCP}{'SYN/Payload'};
+    }
+
+    # TCP Options ACKs
+    #
+    foreach (sort keys %{$Trace{Transport}{TCP}{'ACK Option Size'}}) {
+      $Interfaces{all}{Transport}{TCP}{'ACK Option Size'}{$_}
+	+= $Interfaces{$if}{Transport}{TCP}{'ACK Option Size'}{$_};
+    }
+
+
+    # Packet size distribution
+    #
+    foreach ( sort numerically keys %{$Trace{IP}{'Packet Size'}} ) {
+      $Interfaces{all}{IP}{'Packet Size'}{$_}
+	+= $Interfaces{$if}{IP}{'Packet Size'}{$_};
+
+      foreach my $prt ( @transports ) {
+	$Interfaces{all}{Transport}{$prt}{'Packet Size'}{$_}
+	  += $Interfaces{$if}{Transport}{$prt}{'Packet Size'}{$_};
+      }
+    }
+  }
+
+  push @interfaces, 'all';
+#====================================================================
+
+  foreach my $if (@interfaces) {
+    # Open the interface-specific summary
+    #
+    open(LOG, '>', "$Trace{filename}.if-$if.csv")
+      or croak "Cannot interface-specific summary. $!";
+
+    print STDERR 'Generating interface-specific summary... '
+      if $Verbose;
+
+    print LOG <<GENERAL_INFO;
+GENERAL TRACE INFORMATION
+Filename,$Trace{filename},$date
+Duration,$Trace{ends}
+Records,$Trace{records}
+
+INTERFACE INFORMATION
+Interface Number,$if
+Link Capacity,$Trace{'Link Capacity'}
+Duration,$Interfaces{$if}{ends}
+Records,$Interfaces{$if}{records}
+GENERAL_INFO
+
+    printf LOG
+      "\nTRAFFIC DENSITY\n,Pkts/s,Bytes/Pkt,b/s\nIP Total,%.0f,%.0f,%.0f",
+	$Interfaces{$if}{IP}{'Total Packets'} / $Interfaces{$if}{ends},
+	$Interfaces{$if}{IP}{'Total Bytes'} / $Interfaces{$if}{IP}{'Total Packets'},
+        $Interfaces{$if}{IP}{'Total Bytes'} * 8 / $Interfaces{$if}{ends};
+
+    if ( $Interfaces{$if}{Transport}{TCP}{'Total Packets'}) {
+      printf LOG
+	"\nTCP Total,%.0f,%.0f,%.0f",
+	$Interfaces{$if}{Transport}{TCP}{'Total Packets'} / $Interfaces{$if}{ends},
+        ( $Interfaces{$if}{Transport}{TCP}{'Total Bytes'}
+	   / $Interfaces{$if}{Transport}{TCP}{'Total Packets'} ),
+	( ( $Interfaces{$if}{Transport}{TCP}{'Total Bytes'} * 8 )
+	  / $Interfaces{$if}{ends} );
+    }
+    else {
+      print LOG "\nTCP Total,0,0,0";
+    }
+
+    my @transports;
+
+    push @transports, sort keys %{$Interfaces{$if}{Transport}};
+
+    foreach my $metric ('Packets', 'Bytes') {
+      print LOG
+	"\n\nIP STATISTICS (", uc($metric),
+	")\n,,Fragmentation,,Explicit Congestion Notification,,",
+	"Differentiated Services,,,,IP Options\n,";
+
+      # Make sure that all data points are accounted and are in
+      # correct order.  Using an array with predetermined data points
+      # we are collecting prevents the "silly presentation bug", where
+      # if a protocol does not have any packets with the DF bit set
+      # but does have some packets with the Class Selector bits set, a
+      # loop based on a (sort keys %hash) foreach loop would fail to
+      # place the data collected in the "Class Selector column", but
+      # it would place it in the "DF column".  Moreover, this allows
+      # us to use more descriptive key names for %Trace, and we save a
+      # couple of sort operations.
+      #
+      my @data_points = ( 'Total ', 'DF ', 'MF ', 'ECT ', 'CE ',
+			  'Normal ', 'Class Selector ', 'AF PHB ',
+			  'EF PHB ', 'No IP Options ', 'IP Options '
+			);
+
+      print LOG join( ',', @data_points), "\nIP";
+
+      foreach ( @data_points ) {
+	print_value(\*LOG, $Interfaces{$if}{IP}{"$_$metric"});
+      }
+
+      foreach my $protocol ( @transports ) {
+	print LOG "\n$protocol";
+	foreach ( @data_points ) {
+	  print_value( \*LOG,
+		$Interfaces{$if}{Transport}{$protocol}{join "", $_, $metric} );
+	}
+      }
+    }
+
+    # Print distribution of ACKs
+    #
+    if ( $Interfaces{$if}{Transport}{TCP}{'Total ACKs'}) {
+      print LOG "\n\nTCP ACKNOWLEDGEMENTS";
+      foreach ( 'Total ACKs', 'Cumulative ACKs', 'Pure ACKs', 'Options ACKs' ) {
+	print LOG join ",", "\n$_", $Interfaces{$if}{Transport}{TCP}{$_};
+      }
+    }
+
+    # Print the TCP Advertised window distribution
+    #
+    if ( $Interfaces{$if}{Transport}{TCP}{rwnd} ) {
+      print LOG
+	"\n\nRECEIVER ADVERTISED WINDOW\nSize (Bytes),Soft Count,Hard Count";
+
+      # Some of the entries in the hash are naturally
+      # uninitialized. For example, for a given advertised window
+      # size, we may had SYN(s) with options (soft count), but no
+      # SYN(s) without options (hard count). We take advantage of
+      # Perl's automatic conversion of uninitialized values to an
+      # empty string (""). However, with warnings on, this may lead
+      # the novice user that something REALLY BAD happened, which is
+      # not the case. So disable these particular warnings for the
+      # rest of the block.
+      #
+      no warnings qw(uninitialized);
+
+      foreach ( sort numerically keys %{$Interfaces{$if}{Transport}{TCP}{rwnd}} ) {
+	print LOG "\n$_,",
+	$Interfaces{$if}{Transport}{TCP}{rwnd}{$_}
+	  - $Interfaces{$if}{Transport}{TCP}{awnd}{$_}, ',',
+	    $Interfaces{$if}{Transport}{TCP}{awnd}{$_};
+      }
+    }
+
+    # Print the TCP Options-carrying SYN size distribution
+    #
+    if ( $Interfaces{$if}{Transport}{TCP}{SYN} ) {
+      print LOG
+	"\n\nTCP OPTIONS NEGOTIATION\n",
+	  'TCP Header Length (Bytes),SYN,SYN/ACK';
+
+      no warnings qw(uninitialized);
+
+      foreach ( sort numerically keys %{$Interfaces{$if}{Transport}{TCP}{SYN}} ) {
+ 	print LOG "\n$_,",
+	  $Interfaces{$if}{Transport}{TCP}{SYN}{$_}
+	    - $Interfaces{$if}{Transport}{TCP}{'SYN/ACK'}{$_}, ',',
+	      $Interfaces{$if}{Transport}{TCP}{'SYN/ACK'}{$_};
+      }
+
+      print LOG "\nSYN/Payload,", $Interfaces{$if}{Transport}{TCP}{'SYN/Payload'};
+    }
+
+    # Print the distribution of ACKs carrying TCP options
+    #
+    if ( $Interfaces{$if}{Transport}{TCP}{'Options ACKs'}) {
+      print LOG "\n\nTCP OPTIONS ACK USAGE\nTCP Header Length (Bytes),Count";
+
+      no warnings qw(uninitialized);
+
+      foreach (sort keys %{$Interfaces{$if}{Transport}{TCP}{'ACK Option Size'}}) {
+	print LOG "\n$_,", $Interfaces{$if}{Transport}{TCP}{'ACK Option Size'}{$_};
+      }
+    }
+
+    # Print the packet size distribution
+    #
+    print LOG join ',', "\n\nPACKET SIZE DISTRIBUTION\nBytes,IP", @transports;
+
+    foreach ( sort numerically keys %{$Interfaces{$if}{IP}{'Packet Size'}} ) {
+      print LOG "\n$_,$Interfaces{$if}{IP}{'Packet Size'}{$_}";
+
+      foreach my $prt ( @transports ) {
+	print_value(\*LOG, $Interfaces{$if}{Transport}{$prt}{'Packet Size'}{$_});
+      }
+    }
+
+    print LOG "\n\n";
+  }
+  ########################################################################
+  #^^^^^^^^^^^^^^^End of per-interface summary statistics^^^^^^^^^^^^^^^^^
+  ########################################################################
+
   close LOG;
 
-  print STDERR "see $Trace_Summary{log}\n" if $Verbose;
+  print STDERR "see $Trace{summary}\n" if $Verbose;
 }
 
 sub print_value(*$) {
@@ -1439,7 +1699,7 @@ Finally, all exportable functions can be imported with
 
 =head1 VERSION
 
-This is C<Net::Traces::TSH> version 0.08.
+This is C<Net::Traces::TSH> version 0.09.
 
 =head1 SEE ALSO
 
@@ -1635,6 +1895,7 @@ __DATA__
 133 FC
 134 RSVP-E2E-IGNORE
 135 MOBILITY
+136 UDPLITE
 253 EXPERIMENTATION1
 254 EXPERIMENTATION2
 255 RESERVED

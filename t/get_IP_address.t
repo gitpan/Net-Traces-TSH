@@ -4,7 +4,7 @@ use strict;
 use Test;
 
 BEGIN { plan tests => 7 };
-use Net::Traces::TSH 0.08 qw( get_IP_address );
+use Net::Traces::TSH 0.09 qw( get_IP_address );
 ok(1);
 
 ok(get_IP_address 167772172, '10.0.0.12');
